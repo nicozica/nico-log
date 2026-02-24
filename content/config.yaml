@@ -1,0 +1,39 @@
+site:
+  title: nico // log
+  domain: https://nico.com.ar
+  description: Indie low-tech portal built on static files and cached data.
+  author: Nico
+  city: Buenos Aires
+  timezone: America/Argentina/Buenos_Aires
+  latitude: -34.6037
+  longitude: -58.3816
+  power_mode: solar + grid
+  regenerate_minutes: 30
+
+about:
+  philosophy: |
+    This is a low-tech editorial portal: static first, cache friendly, and resilient by design.
+    If upstream APIs fail, the last known data is still served.
+  runtime: Raspberry Pi Zero 2W + NGINX + Cloudflare Tunnel
+  location: Pipita node in Buenos Aires
+
+status_services:
+  - nginx
+  - pipita-portal-generate.service
+  - cloudflared
+  - pihole-FTL
+  - ssh
+
+status_http_checks:
+  - name: Blur FM
+    url: https://blur.fm
+  - name: Nico Home
+    url: https://nico.com.ar
+
+weather_ttl_minutes: 30
+feeds_ttl_minutes: 30
+status_ttl_minutes: 10
+now_ttl_minutes: 5
+
+now_playing_url: ""
+now_history_url: ""

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+  <h1>Notes</h1>
+  <p>Editorial logbook, sorted by newest first.</p>
+</section>
+
+<div class="stack">
+  {% for note in notes %}
+    <article class="card note-card">
+      <header>
+        <h2><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h2>
+        <p class="meta">{{ note.date_label }}</p>
+      </header>
+      <p>{{ note.excerpt }}</p>
+      <p class="tags">
+        {% for tag in note.tags %}
+          <span class="pill">{{ tag }}</span>
+        {% endfor %}
+      </p>
+    </article>
+  {% endfor %}
+</div>
+{% endblock %}

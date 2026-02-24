@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+  <h1>Links</h1>
+  <p>Fresh entries merged from the configured RSS list.</p>
+</section>
+
+<ul class="link-stream full">
+  {% for link in links %}
+    <li>
+      <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title }}</a>
+      <span class="meta">{{ link.source }} · {{ link.published_label }}</span>
+      <span class="open-icon" aria-hidden="true">↗</span>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

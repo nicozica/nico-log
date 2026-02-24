@@ -1,0 +1,6 @@
+requests
+pyyaml
+feedparser
+markdown
+jinja2
+python-dateutil

@@ -1,0 +1,26 @@
+html[data-theme="terminal"] {
+  --bg: #0b1112;
+  --surface: #111c1e;
+  --surface-strong: #162629;
+  --text: #dce8de;
+  --muted: #8ca294;
+  --accent: #8fd4a8;
+  --border: #254246;
+  --focus: #f7d46b;
+  --good: #7dd991;
+  --warn: #f3c46a;
+  --bad: #f17f6f;
+  --shadow: none;
+}
+
+html[data-theme="terminal"] body {
+  font-family: "Courier New", Courier, monospace;
+  background: linear-gradient(180deg, #0b1112 0%, #081014 100%);
+}
+
+html[data-theme="terminal"] .site-subtitle,
+html[data-theme="terminal"] .meta,
+html[data-theme="terminal"] .ring-label,
+html[data-theme="terminal"] .colophon {
+  letter-spacing: 0.01em;
+}

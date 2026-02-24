@@ -1,0 +1,15 @@
+[Unit]
+Description=Pipita portal static generation
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/repos/personal/nico.com.ar
+Environment=PORTAL_CACHE_DIR=/srv/data/nico-portal-cache
+Environment=PORTAL_OUTPUT_DIR=/srv/repos/personal/nico.com.ar/dist
+ExecStart=/bin/bash -lc '/srv/repos/personal/nico.com.ar/.venv/bin/python /srv/repos/personal/nico.com.ar/generator/build.py --cache-dir "$PORTAL_CACHE_DIR" --output-dir "$PORTAL_OUTPUT_DIR"'
+ExecStartPost=/usr/bin/rsync -a --delete /srv/repos/personal/nico.com.ar/dist/ /srv/data/www/nico.com.ar/
+
+[Install]
+WantedBy=multi-user.target

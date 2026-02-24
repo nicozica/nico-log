@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>Field notes from Pipita</h1>
+  <p>Low-tech publishing, resilient automation, and a calm stream of links.</p>
+</section>
+
+<section class="home-grid" aria-label="Main dashboard">
+  <div class="home-main">
+    <h2>Latest notes</h2>
+    <div class="stack">
+      {% for note in latest_notes %}
+      <article class="card note-card">
+        <header>
+          <h3><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
+          <p class="meta">{{ note.date_label }}</p>
+        </header>
+        <p>{{ note.excerpt }}</p>
+        <p class="tags">
+          {% for tag in note.tags %}
+            <span class="pill">{{ tag }}</span>
+          {% endfor %}
+        </p>
+        <a class="read-link" href="/notes/{{ note.slug }}/">read</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <aside class="home-side" aria-label="Right rail">
+    <section class="card compact">
+      <h2>Weather · {{ site.city }}</h2>
+      <p class="metric">{{ weather.temp_label }}</p>
+      <p>{{ weather.description }}</p>
+      <p class="meta">Humidity {{ weather.humidity_label }} · Wind {{ weather.wind_label }}</p>
+    </section>
+
+    <section class="card compact">
+      <h2>Services / Status</h2>
+      <ul class="status-list">
+        {% for item in status.services %}
+          <li>
+            <span>{{ item.name }}</span>
+            <span class="service-state {{ item.state }}">{{ item.state }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</section>
+
+<section class="card now-playing">
+  <h2>Now Playing</h2>
+  <p class="metric">{{ now.track }} <span>· {{ now.artist }}</span></p>
+  <p class="meta">Started {{ now.started_label }}</p>
+  <div class="actions">
+    <button class="copy-btn" data-copy-value="{{ now.url }}" type="button">Copy URL</button>
+    <a href="/now/">History</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Link stream</h2>
+  <ul class="link-stream">
+    {% for link in links_preview %}
+      <li>
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title }}</a>
+        <span class="meta">{{ link.source }} · {{ link.published_label }}</span>
+        <span class="open-icon" aria-hidden="true">↗</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <p><a href="/links/">See all links</a></p>
+</section>
+
+<section class="tiny-thing" aria-label="Today's tiny thing">
+  <h2>Today's tiny thing</h2>
+  <p>{{ tiny_thing }}</p>
+</section>
+{% endblock %}

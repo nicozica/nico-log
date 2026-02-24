@@ -1,0 +1,21 @@
+feeds:
+  - name: Low-tech Magazine
+    url: https://solar.lowtechmagazine.com/feeds/all-en.atom.xml
+  - name: Kottke
+    url: https://feeds.feedburner.com/kottke
+  - name: Hacker News Frontpage
+    url: https://hnrss.org/frontpage
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+  - name: Ars Technica
+    url: https://feeds.arstechnica.com/arstechnica/index
+  - name: A List Apart
+    url: https://alistapart.com/main/feed/
+  - name: W3C Blog
+    url: https://www.w3.org/blog/feed/
+  - name: Mozilla Hacks
+    url: https://hacks.mozilla.org/feed/
+  - name: LWN.net Headlines
+    url: https://lwn.net/headlines/rss
+  - name: Smashing Magazine
+    url: https://www.smashingmagazine.com/feed/

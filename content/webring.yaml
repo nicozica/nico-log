@@ -1,0 +1,16 @@
+ring:
+  - label: portal
+    name: nico.com.ar
+    url: https://nico.com.ar
+  - label: blog
+    name: notes.nico
+    url: https://nico.com.ar/notes/
+  - label: fotos
+    name: instant archive
+    url: https://nico.com.ar/fotos/
+  - label: radio
+    name: blur fm
+    url: https://blur.fm
+  - label: work
+    name: argensonix
+    url: https://argensonix.com

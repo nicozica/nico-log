@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="note-detail">
+  <header class="section-head">
+    <h1>{{ note.title }}</h1>
+    <p class="meta">{{ note.date_label }}</p>
+    <p class="tags">
+      {% for tag in note.tags %}
+        <span class="pill">{{ tag }}</span>
+      {% endfor %}
+    </p>
+  </header>
+
+  <div class="note-body">
+    {{ note.html | safe }}
+  </div>
+</article>
+
+<p><a href="/notes/">← Back to notes</a></p>
+{% endblock %}

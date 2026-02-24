@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+  <h1>Now Playing</h1>
+  <p>Current track and recent history.</p>
+</section>
+
+<section class="card now-playing">
+  <h2>Current</h2>
+  <p class="metric">{{ now.track }} <span>· {{ now.artist }}</span></p>
+  <p class="meta">Started {{ now.started_label }}</p>
+  <div class="actions">
+    <button class="copy-btn" data-copy-value="{{ now.url }}" type="button">Copy URL</button>
+    <a href="{{ now.url }}" target="_blank" rel="noopener noreferrer">Open stream ↗</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>History</h2>
+  <ul class="history-list">
+    {% for item in history %}
+      <li>
+        <strong>{{ item.track }}</strong> · {{ item.artist }}
+        <span class="meta">{{ item.played_label }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}
