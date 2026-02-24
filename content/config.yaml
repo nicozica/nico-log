@@ -15,7 +15,7 @@ about:
     This is a low-tech editorial portal: static first, cache friendly, and resilient by design.
     If upstream APIs fail, the last known data is still served.
   runtime: Raspberry Pi Zero 2W + NGINX + Cloudflare Tunnel
-  location: Pipita node in Buenos Aires
+  location: Raspberry Pi node in Buenos Aires
 
 status_services:
   - nginx
