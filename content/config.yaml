@@ -7,8 +7,23 @@ site:
   timezone: America/Argentina/Buenos_Aires
   latitude: -34.6037
   longitude: -58.3816
-  power_mode: solar + grid
   regenerate_minutes: 30
+
+status_bar:
+  power_label: grid
+
+footer:
+  links:
+    - label: nico.com.ar
+      href: https://nico.com.ar/
+    - label: notes.nico
+      href: https://nico.com.ar/notes/
+    - label: fotos instant archive
+      href: https://lodelnico.com/
+    - label: blurfm.com
+      href: https://blurfm.com/
+    - label: argensonix.com
+      href: https://argensonix.com/
 
 about:
   philosophy: |
@@ -26,7 +41,7 @@ status_services:
 
 status_http_checks:
   - name: Blur FM
-    url: https://blur.fm
+    url: https://blurfm.com
   - name: Nico Home
     url: https://nico.com.ar
 
@@ -34,6 +49,12 @@ weather_ttl_minutes: 30
 feeds_ttl_minutes: 30
 status_ttl_minutes: 10
 now_ttl_minutes: 5
+
+now_playing:
+  source_url: "https://blurfm.com/icecast-proxy.php"
+  timeout_sec: 3
+  cache_ttl_sec: 60
+  mount: ""
 
 now_playing_url: ""
 now_history_url: ""

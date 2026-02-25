@@ -48,8 +48,31 @@ def main() -> None:
     config = utils.load_yaml(content_dir / "config.yaml", default={})
     site = config.get("site", {})
     about = config.get("about", {})
-    webring = utils.load_yaml(content_dir / "webring.yaml", default={}).get("ring", [])
+    status_bar = config.get("status_bar", {})
+    footer = config.get("footer", {})
     tiny_lines = utils.load_lines(content_dir / "tiny.txt")
+
+    if not isinstance(status_bar, dict):
+        status_bar = {}
+    if not isinstance(footer, dict):
+        footer = {}
+
+    status_bar = {
+        "power_label": str(status_bar.get("power_label", "grid")).strip() or "grid",
+    }
+    footer_links = footer.get("links", [])
+    if not isinstance(footer_links, list):
+        footer_links = []
+
+    normalized_footer_links: list[dict[str, str]] = []
+    for item in footer_links:
+        if not isinstance(item, dict):
+            continue
+        label = str(item.get("label", "")).strip()
+        href = str(item.get("href", "")).strip()
+        if label and href:
+            normalized_footer_links.append({"label": label, "href": href})
+    footer = {"links": normalized_footer_links}
 
     all_notes = notes.load_notes(content_dir / "notes")
     all_links, links_source = feeds.fetch_links(
@@ -80,7 +103,8 @@ def main() -> None:
     base_context = {
         "site": site,
         "about": about,
-        "webring": webring,
+        "status_bar": status_bar,
+        "footer": footer,
         "build": build_info,
         "status_summary": status_summary,
         "status": status_bundle.get("status", {}),

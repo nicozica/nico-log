@@ -37,7 +37,7 @@
       <span><strong>Updated:</strong> {{ build.updated_label }}</span>
       <span><strong>Uptime:</strong> {{ status_summary.uptime_label }}</span>
       <span><strong>CPU temp:</strong> {{ status_summary.cpu_temp_label }}</span>
-      <span><strong>Power:</strong> {{ site.power_mode }}</span>
+      <span><strong>Power:</strong> {{ status_bar.power_label | default('grid', true) }}</span>
     </div>
 
     <main id="content" class="page-content">
@@ -46,9 +46,9 @@
 
     <footer class="site-footer">
       <section class="webring" aria-label="Web ring">
-        {% for island in webring %}
-          <a href="{{ island.url }}" target="_blank" rel="noopener noreferrer">
-            <span class="ring-label">{{ island.label }}</span> {{ island.name }}
+        {% for link in footer.links %}
+          <a href="{{ link.href }}" target="_blank" rel="noopener noreferrer">
+            <span class="ring-label">link</span> {{ link.label }}
           </a>
         {% endfor %}
       </section>

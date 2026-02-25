@@ -66,8 +66,8 @@ button:focus-visible {
 .site-header {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  padding: 2rem 0 1rem;
+  gap: 1.1rem;
+  padding: 2rem 0 1.2rem;
   border-bottom: 1px solid var(--border);
 }
 
@@ -114,20 +114,24 @@ button:focus-visible {
 }
 
 .status-bar {
-  margin-top: 0.8rem;
+  margin-top: 1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 1rem;
+  gap: 0.65rem 1.1rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface-strong);
-  padding: 0.6rem 0.9rem;
+  padding: 0.75rem 1rem;
   font-size: 0.92rem;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
 .page-content {
-  padding: 1.8rem 0 3rem;
+  padding: 2.25rem 0 3.8rem;
+}
+
+.page-content > section + section {
+  margin-top: 1.7rem;
 }
 
 .hero h1,
@@ -144,29 +148,37 @@ button:focus-visible {
 }
 
 .home-grid {
-  margin-top: 1.4rem;
+  margin-top: 1.65rem;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.35rem;
 }
 
 .home-main,
 .home-side {
   display: grid;
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .stack {
   display: grid;
-  gap: 0.9rem;
+  gap: 1.1rem;
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1.15rem 1.2rem;
   box-shadow: var(--shadow);
+}
+
+.card > :first-child {
+  margin-top: 0;
+}
+
+.card > :last-child {
+  margin-bottom: 0;
 }
 
 .note-card h2,
@@ -224,7 +236,7 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
-  padding: 0.55rem 0;
+  padding: 0.72rem 0;
 }
 
 .status-list li:last-child,
@@ -261,10 +273,11 @@ button:focus-visible {
 }
 
 .actions {
-  margin-top: 0.8rem;
+  margin-top: 0.95rem;
   display: flex;
-  gap: 0.8rem;
+  gap: 0.95rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 button.copy-btn {
@@ -292,9 +305,9 @@ button.copy-btn {
 }
 
 .tiny-thing {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   border-left: 3px solid var(--accent);
-  padding-left: 0.9rem;
+  padding-left: 1rem;
 }
 
 .note-body p,
@@ -304,18 +317,23 @@ button.copy-btn {
 
 .site-footer {
   border-top: 1px solid var(--border);
-  padding: 1.4rem 0 2rem;
+  margin-top: 1.4rem;
+  padding: 1.8rem 0 2.4rem;
   color: var(--muted);
 }
 
 .webring {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 1rem;
+  gap: 0.8rem 1rem;
 }
 
 .webring a {
   text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  padding: 0.18rem 0;
 }
 
 .ring-label {
