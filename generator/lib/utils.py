@@ -157,6 +157,6 @@ def format_uptime(seconds: float | int | None) -> str:
 
 def pick_tiny_thing(lines: list[str], when: datetime) -> str:
     if not lines:
-        return "Keep it simple, keep it live."
+        return "Mantenelo simple y en línea."
     index = when.toordinal() % len(lines)
     return lines[index]

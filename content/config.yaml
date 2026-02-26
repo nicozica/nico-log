@@ -1,7 +1,8 @@
 site:
   title: nico // log
-  domain: https://nico.com.ar
-  description: Indie low-tech portal built on static files and cached data.
+  domain: https://www.nico.com.ar
+  tagline: Blog low tech desde Buenos Aires.
+  description: Portal low tech independiente, construido con archivos estáticos y datos en cache.
   author: Nico
   city: Buenos Aires
   timezone: America/Argentina/Buenos_Aires
@@ -12,38 +13,37 @@ site:
 status_bar:
   power_label: grid
 
+status:
+  metrics_mode: remote_ssh
+  ssh_target: "nico@pizero"
+  ssh_timeout_sec: 3
+  allow_fallback_cache: true
+
 footer:
   links:
     - label: nico.com.ar
-      href: https://nico.com.ar/
-    - label: notes.nico
-      href: https://nico.com.ar/notes/
-    - label: fotos instant archive
-      href: https://lodelnico.com/
+      href: https://www.nico.com.ar/
+    - label: photoblog
+      href: https://www.lodelnico.com/
     - label: blurfm.com
-      href: https://blurfm.com/
+      href: https://www.blurfm.com/
     - label: argensonix.com
-      href: https://argensonix.com/
+      href: https://www.argensonix.com/
 
 about:
   philosophy: |
-    This is a low-tech editorial portal: static first, cache friendly, and resilient by design.
-    If upstream APIs fail, the last known data is still served.
+    Este portal prioriza lo simple: primero estático, después dinámico solo cuando hace falta.
+    Si una API externa falla, se reutiliza el último dato válido para mantener continuidad.
   runtime: Raspberry Pi Zero 2W + NGINX + Cloudflare Tunnel
-  location: Raspberry Pi node in Buenos Aires
+  location: Nodo doméstico en Buenos Aires
 
-status_services:
-  - nginx
-  - pipita-portal-generate.service
-  - cloudflared
-  - pihole-FTL
-  - ssh
+home:
+  latest_notes_title: "Últimas notas"
+  latest_notes_subtitle: ""
+  latest_notes_limit: 4
 
-status_http_checks:
-  - name: Blur FM
-    url: https://blurfm.com
-  - name: Nico Home
-    url: https://nico.com.ar
+notes:
+  page_size: 10
 
 weather_ttl_minutes: 30
 feeds_ttl_minutes: 30
@@ -51,7 +51,8 @@ status_ttl_minutes: 10
 now_ttl_minutes: 5
 
 now_playing:
-  source_url: "https://blurfm.com/icecast-proxy.php"
+  source_url: "/api/now-playing"
+  stream_url: "https://www.blurfm.com/"
   timeout_sec: 3
   cache_ttl_sec: 60
   mount: ""

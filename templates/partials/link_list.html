@@ -1,0 +1,8 @@
+<ul class="link-list{% if list_class %} {{ list_class }}{% endif %}">
+  {% for link in links %}
+    <li class="link-item">
+      <a class="link-title" href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title }}</a>
+      <span class="meta link-meta">{{ link.source }} · {{ link.published_label }}</span>
+    </li>
+  {% endfor %}
+</ul>

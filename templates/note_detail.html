@@ -3,7 +3,7 @@
 {% block content %}
 <article class="note-detail">
   <header class="section-head">
-    <h1>{{ note.title }}</h1>
+    <h2 class="section-title">{{ note.title }}</h2>
     <p class="meta">{{ note.date_label }}</p>
     <p class="tags">
       {% for tag in note.tags %}
@@ -17,5 +17,5 @@
   </div>
 </article>
 
-<p><a href="/notes/">← Back to notes</a></p>
+<p><a href="/notes/">← Volver a notas</a></p>
 {% endblock %}

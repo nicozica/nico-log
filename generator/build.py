@@ -5,6 +5,7 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -32,6 +33,16 @@ def render_template(
     destination.write_text(html, encoding="utf-8")
 
 
+def _to_positive_int(raw_value: Any, default: int) -> int:
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return default
+    if value <= 0:
+        return default
+    return value
+
+
 def main() -> None:
     args = parse_args()
 
@@ -50,15 +61,31 @@ def main() -> None:
     about = config.get("about", {})
     status_bar = config.get("status_bar", {})
     footer = config.get("footer", {})
+    now_playing_settings = config.get("now_playing", {})
+    home_settings = config.get("home", {})
+    notes_settings = config.get("notes", {})
     tiny_lines = utils.load_lines(content_dir / "tiny.txt")
 
+    if not isinstance(site, dict):
+        site = {}
     if not isinstance(status_bar, dict):
         status_bar = {}
     if not isinstance(footer, dict):
         footer = {}
+    if not isinstance(now_playing_settings, dict):
+        now_playing_settings = {}
+    if not isinstance(home_settings, dict):
+        home_settings = {}
+    if not isinstance(notes_settings, dict):
+        notes_settings = {}
+
+    site_power = str(site.get("power", "")).strip()
+    if not site_power:
+        site_power = str(status_bar.get("power_label", "grid")).strip() or "grid"
+    site = {**site, "power": site_power}
 
     status_bar = {
-        "power_label": str(status_bar.get("power_label", "grid")).strip() or "grid",
+        "power_label": site_power,
     }
     footer_links = footer.get("links", [])
     if not isinstance(footer_links, list):
@@ -86,10 +113,28 @@ def main() -> None:
     now_data, now_history, now_source = now_playing.fetch_now(config, cache_dir, content_dir)
 
     built_at = datetime.now().astimezone()
+    build_id = built_at.strftime("%Y%m%d%H%M%S")
     build_info = {
         "updated_iso": built_at.isoformat(),
         "updated_label": built_at.strftime("%Y-%m-%d %H:%M"),
     }
+    now_source_url = str(now_playing_settings.get("source_url", "")).strip()
+    now_stream_url = str(now_playing_settings.get("stream_url", "")).strip() or "https://www.blurfm.com/"
+    now_api_url = now_source_url
+    parsed_now_url = urlparse(now_source_url)
+    if parsed_now_url.scheme and parsed_now_url.netloc:
+        host = parsed_now_url.netloc.lower()
+        if host in {"nico.com.ar", "www.nico.com.ar"}:
+            now_api_url = parsed_now_url.path or "/api/now-playing"
+            if parsed_now_url.query:
+                now_api_url = f"{now_api_url}?{parsed_now_url.query}"
+    now_refresh_enabled = now_api_url.startswith("/")
+    now_data = {**now_data, "refresh_enabled": now_refresh_enabled}
+
+    latest_notes_title = str(home_settings.get("latest_notes_title", "Últimas notas")).strip() or "Últimas notas"
+    latest_notes_subtitle = str(home_settings.get("latest_notes_subtitle", "")).strip()
+    latest_notes_limit = _to_positive_int(home_settings.get("latest_notes_limit", 4), default=4)
+    notes_page_size = _to_positive_int(notes_settings.get("page_size", 10), default=10)
     status_summary = status_bundle.get("summary", {})
     tiny_thing = utils.pick_tiny_thing(tiny_lines, built_at)
 
@@ -116,6 +161,9 @@ def main() -> None:
             "now": now_source,
             "status": status_bundle.get("status", {}).get("source", "unknown"),
         },
+        "build_id": build_id,
+        "now_api_url": now_api_url,
+        "now_stream_url": now_stream_url,
     }
 
     render_template(
@@ -124,25 +172,59 @@ def main() -> None:
         output_dir / "index.html",
         {
             **base_context,
-            "page_title": "Home",
+            "page_title": "Inicio",
             "current_path": "/",
-            "latest_notes": all_notes[:3],
-            "links_preview": all_links[:10],
+            "latest_notes": all_notes[:latest_notes_limit],
+            "links_preview": all_links[:6],
+            "latest_notes_title": latest_notes_title,
+            "latest_notes_subtitle": latest_notes_subtitle,
             "tiny_thing": tiny_thing,
         },
     )
 
-    render_template(
-        env,
-        "notes_index.html",
-        output_dir / "notes" / "index.html",
-        {
-            **base_context,
-            "page_title": "Notes",
-            "current_path": "/notes/",
-            "notes": all_notes,
-        },
-    )
+    total_notes = len(all_notes)
+    total_pages = max(1, (total_notes + notes_page_size - 1) // notes_page_size)
+
+    for page in range(1, total_pages + 1):
+        start = (page - 1) * notes_page_size
+        end = start + notes_page_size
+        page_notes = all_notes[start:end]
+
+        if page == 1:
+            destination = output_dir / "notes" / "index.html"
+            current_path = "/notes/"
+        else:
+            destination = output_dir / "notes" / "page" / str(page) / "index.html"
+            current_path = f"/notes/page/{page}/"
+
+        prev_url = ""
+        next_url = ""
+        if page > 1:
+            prev_url = "/notes/" if page == 2 else f"/notes/page/{page - 1}/"
+        if page < total_pages:
+            next_url = f"/notes/page/{page + 1}/"
+
+        pagination = {
+            "page": page,
+            "total_pages": total_pages,
+            "has_prev": page > 1,
+            "has_next": page < total_pages,
+            "prev_url": prev_url,
+            "next_url": next_url,
+        }
+
+        render_template(
+            env,
+            "notes_index.html",
+            destination,
+            {
+                **base_context,
+                "page_title": "Notas",
+                "current_path": current_path,
+                "notes": page_notes,
+                "pagination": pagination,
+            },
+        )
 
     for note in all_notes:
         render_template(
@@ -175,20 +257,9 @@ def main() -> None:
         output_dir / "now" / "index.html",
         {
             **base_context,
-            "page_title": "Now Playing",
+            "page_title": "Ahora sonando",
             "current_path": "/now/",
             "history": now_history,
-        },
-    )
-
-    render_template(
-        env,
-        "status_index.html",
-        output_dir / "status" / "index.html",
-        {
-            **base_context,
-            "page_title": "Status",
-            "current_path": "/status/",
         },
     )
 
@@ -198,7 +269,7 @@ def main() -> None:
         output_dir / "about" / "index.html",
         {
             **base_context,
-            "page_title": "About",
+            "page_title": "Acerca",
             "current_path": "/about/",
         },
     )
@@ -213,6 +284,10 @@ def main() -> None:
     )
 
     utils.copy_static_tree(static_dir, output_dir / "assets")
+
+    favicon_source = static_dir / "favicon.svg"
+    if favicon_source.exists():
+        (output_dir / "favicon.svg").write_text(favicon_source.read_text(encoding="utf-8"), encoding="utf-8")
 
 
 if __name__ == "__main__":

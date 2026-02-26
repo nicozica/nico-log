@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="nico // log">
+  <rect width="64" height="64" rx="10" fill="#0b0f0e" />
+  <g fill="none" stroke="#dce8de" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 44V20" stroke-width="6" />
+    <path d="M15 30C18 20 28 20 31 30V44" stroke-width="6" />
+    <path d="M41 21L35 43" stroke-width="5" />
+    <path d="M51 21L45 43" stroke-width="5" />
+  </g>
+</svg>

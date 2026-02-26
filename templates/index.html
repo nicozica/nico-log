@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-<section class="hero">
-  <h1>Field notes from nico // log</h1>
-  <p>Low-tech publishing, resilient automation, and a calm stream of links.</p>
-</section>
+<section class="home-grid" aria-label="Panel principal">
+  <h2 class="section-title home-heading">{{ latest_notes_title }}</h2>
+  {% if latest_notes_subtitle %}
+  <p class="section-subtitle home-subtitle">{{ latest_notes_subtitle }}</p>
+  {% endif %}
 
-<section class="home-grid" aria-label="Main dashboard">
   <div class="home-main">
-    <h2>Latest notes</h2>
     <div class="stack">
       {% for note in latest_notes %}
       <article class="card note-card">
         <header>
-          <h3><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
+          <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
           <p class="meta">{{ note.date_label }}</p>
         </header>
         <p>{{ note.excerpt }}</p>
@@ -22,60 +21,57 @@
             <span class="pill">{{ tag }}</span>
           {% endfor %}
         </p>
-        <a class="read-link" href="/notes/{{ note.slug }}/">read</a>
+        <a class="read-link" href="/notes/{{ note.slug }}/">leer</a>
       </article>
       {% endfor %}
     </div>
   </div>
 
-  <aside class="home-side" aria-label="Right rail">
+  <aside class="home-side" aria-label="Columna lateral">
     <section class="card compact">
-      <h2>Weather · {{ site.city }}</h2>
+      <h2 class="section-title">Clima · {{ site.city }}</h2>
       <p class="metric">{{ weather.temp_label }}</p>
       <p>{{ weather.description }}</p>
-      <p class="meta">Humidity {{ weather.humidity_label }} · Wind {{ weather.wind_label }}</p>
+      <p class="meta">Humedad {{ weather.humidity_label }} · Viento {{ weather.wind_label }}</p>
+    </section>
+
+    <section class="card now-playing" data-now-playing data-now-endpoint="{{ now_api_url }}" data-now-refresh="{{ 'true' if now.refresh_enabled else 'false' }}">
+      <h2 class="section-title">Ahora sonando</h2>
+      <div class="now-playing-row">
+        <img
+          class="np-cover"
+          data-now-cover
+          src="/assets/img/np-placeholder.svg"
+          alt="Tapa del tema actual"
+          width="64"
+          height="64"
+          loading="lazy"
+        />
+        <div class="now-playing-copy">
+          <p class="metric">
+            <span data-now-track>{{ now.track if now.available else "No disponible" }}</span>
+            <span data-now-artist-wrap{% if not now.available or not now.artist %} hidden{% endif %}>· <span data-now-artist>{{ now.artist }}</span></span>
+          </p>
+          <div class="actions">
+            <a href="/now/">Ver ahora sonando</a>
+            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Abrir Blur FM ↗</a>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="card compact">
-      <h2>Services / Status</h2>
-      <ul class="status-list">
-        {% for item in status.services %}
-          <li>
-            <span>{{ item.name }}</span>
-            <span class="service-state {{ item.state }}">{{ item.state }}</span>
-          </li>
-        {% endfor %}
-      </ul>
+      <h2 class="section-title">Links</h2>
+      {% set links = links_preview[:6] %}
+      {% set list_class = "link-list-compact" %}
+      {% include "partials/link_list.html" %}
+      <p><a href="/links/">Ver todos</a></p>
     </section>
   </aside>
 </section>
 
-<section class="card now-playing">
-  <h2>Now Playing</h2>
-  <p class="metric">{{ now.track }} <span>· {{ now.artist }}</span></p>
-  <p class="meta">Started {{ now.started_label }}</p>
-  <div class="actions">
-    <button class="copy-btn" data-copy-value="{{ now.url }}" type="button">Copy URL</button>
-    <a href="/now/">History</a>
-  </div>
-</section>
-
-<section class="card">
-  <h2>Link stream</h2>
-  <ul class="link-stream">
-    {% for link in links_preview %}
-      <li>
-        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.title }}</a>
-        <span class="meta">{{ link.source }} · {{ link.published_label }}</span>
-        <span class="open-icon" aria-hidden="true">↗</span>
-      </li>
-    {% endfor %}
-  </ul>
-  <p><a href="/links/">See all links</a></p>
-</section>
-
-<section class="tiny-thing" aria-label="Today's tiny thing">
-  <h2>Today's tiny thing</h2>
+<section class="tiny-thing" aria-label="Mini del día">
+  <h2 class="section-title">Mini del día</h2>
   <p>{{ tiny_thing }}</p>
 </section>
 {% endblock %}

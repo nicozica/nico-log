@@ -1,10 +1,10 @@
-Open one tab less today.
-Fix one tiny bug before coffee.
-Write with fewer dependencies.
-Backup before you tweak.
-Keep pages light and readable.
-Touch grass, then ship.
-Name files like you mean it.
-Read logs before panic.
-One script can save a week.
-Leave cache warmer than you found it.
+Abrí una pestaña menos hoy.
+Arreglá un bug chiquito antes del café.
+Escribí con menos dependencias.
+Hacé backup antes de tocar nada.
+Mantené las páginas livianas y legibles.
+Salí a caminar y después publicá.
+Nombrá archivos con intención.
+Leé logs antes de entrar en pánico.
+Un script puede ahorrarte una semana.
+Dejá el caché mejor que como lo encontraste.

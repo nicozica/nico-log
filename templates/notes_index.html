@@ -2,15 +2,15 @@
 
 {% block content %}
 <section class="section-head">
-  <h1>Notes</h1>
-  <p>Editorial logbook, sorted by newest first.</p>
+  <h2 class="section-title">Notas</h2>
+  <p>Bitácora editorial, ordenada de más nueva a más antigua.</p>
 </section>
 
 <div class="stack">
   {% for note in notes %}
     <article class="card note-card">
       <header>
-        <h2><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h2>
+        <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
         <p class="meta">{{ note.date_label }}</p>
       </header>
       <p>{{ note.excerpt }}</p>
@@ -22,4 +22,22 @@
     </article>
   {% endfor %}
 </div>
+
+{% if pagination.total_pages > 1 %}
+<nav class="pagination" aria-label="Paginación de notas">
+  {% if pagination.has_prev %}
+    <a href="{{ pagination.prev_url }}">Anterior</a>
+  {% else %}
+    <span class="pagination-disabled">Anterior</span>
+  {% endif %}
+
+  <span class="pagination-meta">Página {{ pagination.page }} de {{ pagination.total_pages }}</span>
+
+  {% if pagination.has_next %}
+    <a href="{{ pagination.next_url }}">Siguiente</a>
+  {% else %}
+    <span class="pagination-disabled">Siguiente</span>
+  {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

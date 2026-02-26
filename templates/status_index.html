@@ -2,27 +2,27 @@
 
 {% block content %}
 <section class="section-head">
-  <h1>Status</h1>
-  <p>Local service checks + optional HTTP probes.</p>
+  <h2 class="section-title">Estado</h2>
+  <p>Chequeos de servicios locales + pruebas HTTP opcionales.</p>
 </section>
 
 <section class="card">
-  <h2>System summary</h2>
+  <h2 class="section-title">Resumen del sistema</h2>
   <ul class="status-summary-list">
-    <li><strong>Generated:</strong> {{ build.updated_label }}</li>
-    <li><strong>Uptime:</strong> {{ status_summary.uptime_label }}</li>
-    <li><strong>CPU temp:</strong> {{ status_summary.cpu_temp_label }}</li>
-    <li><strong>Data source:</strong> {{ status.source }}</li>
+    <li><strong>Generado:</strong> {{ build.updated_label }}</li>
+    <li><strong>Tiempo activo:</strong> {{ status_summary.uptime_label }}</li>
+    <li><strong>Temp CPU:</strong> {{ status_summary.cpu_temp_label }}</li>
+    <li><strong>Fuente de datos:</strong> {{ status.source_label }}</li>
   </ul>
 </section>
 
 <section class="card">
-  <h2>Services</h2>
+  <h2 class="section-title">Servicios</h2>
   <ul class="status-list detailed">
     {% for item in status.services %}
       <li>
         <span>{{ item.name }}</span>
-        <span class="service-state {{ item.state }}">{{ item.state }}</span>
+        <span class="service-state {{ item.state }}">{{ item.state_label }}</span>
         <span class="meta">{{ item.detail }}</span>
       </li>
     {% endfor %}
@@ -30,12 +30,12 @@
 </section>
 
 <section class="card">
-  <h2>HTTP checks</h2>
+  <h2 class="section-title">Chequeos HTTP</h2>
   <ul class="status-list detailed">
     {% for item in status.http_checks %}
       <li>
         <span>{{ item.name }}</span>
-        <span class="service-state {{ item.state }}">{{ item.state }}</span>
+        <span class="service-state {{ item.state }}">{{ item.state_label }}</span>
         <span class="meta">{{ item.detail }}</span>
       </li>
     {% endfor %}

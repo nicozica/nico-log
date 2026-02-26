@@ -10,26 +10,56 @@ from . import utils
 
 
 WEATHER_CODES = {
-    0: "clear",
-    1: "mostly clear",
-    2: "partly cloudy",
-    3: "overcast",
-    45: "fog",
-    48: "depositing rime fog",
-    51: "light drizzle",
-    53: "drizzle",
-    55: "dense drizzle",
-    61: "light rain",
-    63: "rain",
-    65: "heavy rain",
-    71: "light snow",
-    73: "snow",
-    75: "heavy snow",
-    80: "rain showers",
-    81: "rain showers",
-    82: "violent rain showers",
-    95: "thunderstorm",
+    0: "despejado",
+    1: "mayormente despejado",
+    2: "parcialmente nublado",
+    3: "nublado",
+    45: "niebla",
+    48: "niebla con escarcha",
+    51: "llovizna leve",
+    53: "llovizna",
+    55: "llovizna intensa",
+    61: "lluvia leve",
+    63: "lluvia",
+    65: "lluvia intensa",
+    71: "nieve leve",
+    73: "nieve",
+    75: "nieve intensa",
+    80: "chaparrones",
+    81: "chaparrones",
+    82: "chaparrones fuertes",
+    95: "tormenta",
 }
+
+DESCRIPTION_ALIASES = {
+    "clear": "despejado",
+    "mostly clear": "mayormente despejado",
+    "partly cloudy": "parcialmente nublado",
+    "overcast": "nublado",
+    "fog": "niebla",
+    "depositing rime fog": "niebla con escarcha",
+    "light drizzle": "llovizna leve",
+    "drizzle": "llovizna",
+    "dense drizzle": "llovizna intensa",
+    "light rain": "lluvia leve",
+    "rain": "lluvia",
+    "heavy rain": "lluvia intensa",
+    "light snow": "nieve leve",
+    "snow": "nieve",
+    "heavy snow": "nieve intensa",
+    "rain showers": "chaparrones",
+    "violent rain showers": "chaparrones fuertes",
+    "thunderstorm": "tormenta",
+    "offline cached forecast": "pronóstico en cache",
+    "unknown": "desconocido",
+}
+
+
+def _to_spanish_description(value: Any) -> str:
+    description = str(value or "").strip().lower()
+    if not description:
+        return "desconocido"
+    return DESCRIPTION_ALIASES.get(description, str(value))
 
 
 def _fetch_weather(site: dict[str, Any]) -> dict[str, Any]:
@@ -50,7 +80,7 @@ def _fetch_weather(site: dict[str, Any]) -> dict[str, Any]:
         "temp_c": float(payload.get("temperature_2m", 0.0)),
         "humidity": int(payload.get("relative_humidity_2m", 0)),
         "wind_kmh": float(payload.get("wind_speed_10m", 0.0)),
-        "description": WEATHER_CODES.get(code, "unknown"),
+        "description": WEATHER_CODES.get(code, "desconocido"),
     }
 
 
@@ -60,7 +90,7 @@ def _fallback_weather() -> dict[str, Any]:
         "temp_c": 24.0,
         "humidity": 58,
         "wind_kmh": 12.0,
-        "description": "offline cached forecast",
+        "description": "pronóstico en cache",
     }
 
 
@@ -84,7 +114,7 @@ def fetch_weather(config: dict[str, Any], cache_dir: Path) -> tuple[dict[str, An
         "temp_c": temp,
         "humidity": humidity,
         "wind_kmh": wind,
-        "description": str(payload.get("description", "unknown")),
+        "description": _to_spanish_description(payload.get("description", "desconocido")),
         "temp_label": f"{temp:.1f}°C",
         "humidity_label": f"{humidity}%",
         "wind_label": f"{wind:.0f} km/h",
