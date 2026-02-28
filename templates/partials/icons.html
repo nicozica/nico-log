@@ -1,0 +1,57 @@
+{% macro inline(name) -%}
+  {% if name == "music" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M9 18V6l10-2v12" />
+    <circle cx="7" cy="18" r="2.5" />
+    <circle cx="17" cy="16" r="2.5" />
+  </svg>
+  {% elif name == "artist" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M5 20c1.2-3.2 3.7-5 7-5s5.8 1.8 7 5" />
+  </svg>
+  {% elif name == "album" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+  {% elif name == "calendar" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="4" y="5" width="16" height="15" rx="2" />
+    <path d="M8 3v4M16 3v4M4 10h16" />
+  </svg>
+  {% elif name == "sun" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" />
+  </svg>
+  {% elif name == "rain" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 15a4 4 0 1 1 .8-7.9A5 5 0 0 1 17 8.5a3.5 3.5 0 0 1 0 7H6z" />
+    <path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3" />
+  </svg>
+  {% elif name == "drizzle" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 14.5a4 4 0 1 1 .8-7.9A5 5 0 0 1 17 8a3.5 3.5 0 0 1 0 6.5H6z" />
+    <path d="M9 18.5l-.5 1.5M13 18.5l-.5 1.5M17 18.5l-.5 1.5" />
+  </svg>
+  {% elif name == "storm" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 14.5a4 4 0 1 1 .8-7.9A5 5 0 0 1 17 8a3.5 3.5 0 0 1 0 6.5H6z" />
+    <path d="M12 14l-2 4h2l-1 4 4-6h-2l1-2z" />
+  </svg>
+  {% elif name == "snow" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 14a4 4 0 1 1 .8-7.9A5 5 0 0 1 17 7.5a3.5 3.5 0 0 1 0 6.5H6z" />
+    <path d="M9 18v3M7.5 19.5h3M14 18v3M12.5 19.5h3" />
+  </svg>
+  {% elif name == "mist" -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 9h16M3 13h18M5 17h14" />
+  </svg>
+  {% else -%}
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 15a4 4 0 1 1 .8-7.9A5 5 0 0 1 17 8.5a3.5 3.5 0 0 1 0 7H6z" />
+  </svg>
+  {% endif -%}
+{%- endmacro %}

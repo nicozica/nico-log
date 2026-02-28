@@ -156,7 +156,7 @@ def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: in
                 "url": str(raw.get("url", "#")),
                 "source": str(raw.get("source", "feed")),
                 "published": published.isoformat(),
-                "published_label": published.strftime("%Y-%m-%d"),
+                "published_label": utils.format_date(published),
             }
         )
 

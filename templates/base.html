@@ -40,7 +40,6 @@
         <a href="/" {% if current_path == '/' %}aria-current="page"{% endif %}>Inicio</a>
         <a href="/notes/" {% if current_path.startswith('/notes/') %}aria-current="page"{% endif %}>Notas</a>
         <a href="/links/" {% if current_path.startswith('/links/') %}aria-current="page"{% endif %}>Links</a>
-        <a href="/now/" {% if current_path.startswith('/now/') %}aria-current="page"{% endif %}>Ahora sonando</a>
         <a href="/about/" {% if current_path.startswith('/about/') %}aria-current="page"{% endif %}>Acerca</a>
       </nav>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Alternar modo terminal">

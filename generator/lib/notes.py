@@ -53,7 +53,7 @@ def load_notes(notes_dir: Path) -> list[dict[str, Any]]:
                 "slug": slug,
                 "date": dt,
                 "date_iso": dt.isoformat(),
-                "date_label": dt.strftime("%Y-%m-%d"),
+                "date_label": utils.format_date(dt),
                 "tags": tags,
                 "excerpt": utils.excerpt_from_markdown(body),
                 "body": body,

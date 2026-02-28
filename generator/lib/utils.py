@@ -97,7 +97,11 @@ def to_datetime(value: Any) -> datetime:
 
 
 def format_datetime(dt: datetime) -> str:
-    return to_datetime(dt).strftime("%Y-%m-%d %H:%M")
+    return to_datetime(dt).strftime("%d/%m/%Y %H:%M")
+
+
+def format_date(dt: datetime) -> str:
+    return to_datetime(dt).strftime("%d/%m/%Y")
 
 
 def slugify(value: str) -> str:
@@ -109,7 +113,7 @@ def slugify(value: str) -> str:
 
 
 def excerpt_from_markdown(body: str, words: int = 45) -> str:
-    text = re.sub(r"`{1,3}.*?`{1,3}", "", body, flags=re.DOTALL)
+    text = re.sub(r"`{1,3}(.*?)`{1,3}", r"\1", body, flags=re.DOTALL)
     text = re.sub(r"\[(.*?)\]\(.*?\)", r"\1", text)
     text = re.sub(r"[#>*_~\-]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()

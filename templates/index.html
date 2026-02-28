@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "partials/icons.html" as icons %}
 
 {% block content %}
 <section class="home-grid" aria-label="Panel principal">
@@ -31,7 +32,11 @@
     <section class="card compact">
       <h2 class="section-title">Clima · {{ site.city }}</h2>
       <p class="metric">{{ weather.temp_label }}</p>
-      <p>{{ weather.description }}</p>
+      <p class="weather-condition">
+        <span class="inline-icon" aria-hidden="true">{{ icons.inline(weather.icon) }}</span>
+        <span class="sr-only">Condición del clima:</span>
+        <span>{{ weather.description }}</span>
+      </p>
       <p class="meta">Humedad {{ weather.humidity_label }} · Viento {{ weather.wind_label }}</p>
     </section>
 
@@ -41,20 +46,35 @@
         <img
           class="np-cover"
           data-now-cover
-          src="/assets/img/np-placeholder.svg"
+          src="/assets/img/blurfm-cover-default.svg"
           alt="Tapa del tema actual"
           width="64"
           height="64"
           loading="lazy"
         />
         <div class="now-playing-copy">
-          <p class="metric">
-            <span data-now-track>{{ now.track if now.available else "No disponible" }}</span>
-            <span data-now-artist-wrap{% if not now.available or not now.artist %} hidden{% endif %}>· <span data-now-artist>{{ now.artist }}</span></span>
+          <p class="now-meta-line now-meta-track">
+            <span class="inline-icon" aria-hidden="true">{{ icons.inline("music") }}</span>
+            <span class="sr-only">Tema:</span>
+            <span class="now-meta-value" data-now-track>{{ now.track if now.available else "No disponible" }}</span>
+          </p>
+          <p class="now-meta-line" data-now-artist-row{% if not now.available or not now.artist %} hidden{% endif %}>
+            <span class="inline-icon" aria-hidden="true">{{ icons.inline("artist") }}</span>
+            <span class="sr-only">Artista:</span>
+            <span class="now-meta-value" data-now-artist>{{ now.artist }}</span>
+          </p>
+          <p class="now-meta-line" data-now-album-row>
+            <span class="inline-icon" aria-hidden="true">{{ icons.inline("album") }}</span>
+            <span class="sr-only">Álbum:</span>
+            <span class="now-meta-value" data-now-album>{{ now.album or "No disponible" }}</span>
+          </p>
+          <p class="now-meta-line" data-now-year-row>
+            <span class="inline-icon" aria-hidden="true">{{ icons.inline("calendar") }}</span>
+            <span class="sr-only">Año:</span>
+            <span class="now-meta-value" data-now-year>{{ now.year or "No disponible" }}</span>
           </p>
           <div class="actions">
-            <a href="/now/">Ver ahora sonando</a>
-            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Abrir Blur FM ↗</a>
+            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Escuchar en Blur FM ↗</a>
           </div>
         </div>
       </div>

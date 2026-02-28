@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+{% import "partials/icons.html" as icons %}
 
 {% block content %}
 <section class="section-head">
   <h2 class="section-title">Ahora sonando</h2>
-  <p>Tema actual e historial reciente.</p>
+  <p>Tema actual en vivo desde Blur FM.</p>
 </section>
 
 <section class="card now-playing" data-now-playing data-now-endpoint="{{ now_api_url }}" data-now-refresh="{{ 'true' if now.refresh_enabled else 'false' }}">
@@ -12,37 +13,37 @@
     <img
       class="np-cover"
       data-now-cover
-      src="/assets/img/np-placeholder.svg"
+      src="/assets/img/blurfm-cover-default.svg"
       alt="Tapa del tema actual"
       width="64"
       height="64"
       loading="lazy"
     />
     <div class="now-playing-copy">
-      <p class="metric">
-        <span data-now-track>{{ now.track if now.available else "No disponible" }}</span>
-        <span data-now-artist-wrap{% if not now.available or not now.artist %} hidden{% endif %}>· <span data-now-artist>{{ now.artist }}</span></span>
+      <p class="now-meta-line now-meta-track">
+        <span class="inline-icon" aria-hidden="true">{{ icons.inline("music") }}</span>
+        <span class="sr-only">Tema:</span>
+        <span class="now-meta-value" data-now-track>{{ now.track if now.available else "No disponible" }}</span>
+      </p>
+      <p class="now-meta-line" data-now-artist-row{% if not now.available or not now.artist %} hidden{% endif %}>
+        <span class="inline-icon" aria-hidden="true">{{ icons.inline("artist") }}</span>
+        <span class="sr-only">Artista:</span>
+        <span class="now-meta-value" data-now-artist>{{ now.artist }}</span>
+      </p>
+      <p class="now-meta-line" data-now-album-row>
+        <span class="inline-icon" aria-hidden="true">{{ icons.inline("album") }}</span>
+        <span class="sr-only">Álbum:</span>
+        <span class="now-meta-value" data-now-album>{{ now.album or "No disponible" }}</span>
+      </p>
+      <p class="now-meta-line" data-now-year-row>
+        <span class="inline-icon" aria-hidden="true">{{ icons.inline("calendar") }}</span>
+        <span class="sr-only">Año:</span>
+        <span class="now-meta-value" data-now-year>{{ now.year or "No disponible" }}</span>
       </p>
       <div class="actions">
-        <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Abrir Blur FM ↗</a>
+        <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Escuchar en Blur FM ↗</a>
       </div>
     </div>
   </div>
-</section>
-
-<section class="card">
-  <h2 class="section-title">Historial</h2>
-  {% if now.live and history %}
-  <ul class="history-list">
-    {% for item in history %}
-      <li>
-        <strong>{{ item.track }}</strong> · {{ item.artist }}
-        <span class="meta">{{ item.played_label }}</span>
-      </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="meta">Historial no disponible hasta contar con una fuente en vivo.</p>
-  {% endif %}
 </section>
 {% endblock %}

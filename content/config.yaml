@@ -1,7 +1,7 @@
 site:
   title: nico // log
   domain: https://www.nico.com.ar
-  tagline: Blog low tech desde Buenos Aires.
+  tagline: Website corriendo en 32 bits y 512 MB de RAM
   description: Portal low tech independiente, construido con archivos estáticos y datos en cache.
   author: Nico
   city: Buenos Aires
@@ -21,8 +21,8 @@ status:
 
 footer:
   links:
-    - label: nico.com.ar
-      href: https://www.nico.com.ar/
+    - label: nico.ar (english blog)
+      href: https://nico.ar/
     - label: photoblog
       href: https://www.lodelnico.com/
     - label: blurfm.com

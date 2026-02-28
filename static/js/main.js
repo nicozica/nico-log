@@ -3,7 +3,8 @@
 
   const root = document.documentElement;
   const toggleButton = document.getElementById("theme-toggle");
-  const COVER_PLACEHOLDER_SRC = "/assets/img/np-placeholder.svg";
+  const COVER_FALLBACK_SRC = "/assets/img/blurfm-cover-default.svg";
+  const NOW_UNAVAILABLE_LABEL = "No disponible";
   const COVER_CACHE_PREFIX = "cover|";
   const COVER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -152,38 +153,61 @@
     return normalizedArtist + "|" + normalizedTrack;
   }
 
+  function emptyArtworkData() {
+    return {
+      url: "",
+      album: "",
+      year: "",
+    };
+  }
+
+  function readYear(value) {
+    const cleaned = cleanText(value);
+    const match = cleaned.match(/\d{4}/);
+    return match ? match[0] : "";
+  }
+
   function readCoverCache(nowKey) {
     if (!nowKey) {
-      return "";
+      return emptyArtworkData();
     }
 
     try {
       const rawValue = localStorage.getItem(COVER_CACHE_PREFIX + nowKey);
       if (!rawValue) {
-        return "";
+        return emptyArtworkData();
       }
       const parsed = JSON.parse(rawValue);
       if (!parsed || typeof parsed !== "object") {
-        return "";
+        return emptyArtworkData();
       }
 
-      const url = cleanText(parsed.url);
+      const url = normalizeArtworkUrl(parsed.url);
+      const album = cleanText(parsed.album);
+      const year = readYear(parsed.year);
       const timestamp = Number(parsed.ts || 0);
-      if (!url || !timestamp) {
-        return "";
+      if (!timestamp) {
+        return emptyArtworkData();
       }
       if (Date.now() - timestamp > COVER_CACHE_TTL_MS) {
         localStorage.removeItem(COVER_CACHE_PREFIX + nowKey);
-        return "";
+        return emptyArtworkData();
       }
-      return url;
+      return { url: url, album: album, year: year };
     } catch (error) {
-      return "";
+      return emptyArtworkData();
     }
   }
 
-  function writeCoverCache(nowKey, url) {
-    if (!nowKey || !url) {
+  function writeCoverCache(nowKey, artwork) {
+    if (!nowKey || !artwork || typeof artwork !== "object") {
+      return;
+    }
+
+    const url = normalizeArtworkUrl(artwork.url);
+    const album = cleanText(artwork.album);
+    const year = readYear(artwork.year);
+    if (!url && !album && !year) {
       return;
     }
 
@@ -192,6 +216,8 @@
         COVER_CACHE_PREFIX + nowKey,
         JSON.stringify({
           url: url,
+          album: album,
+          year: year,
           ts: Date.now(),
         })
       );
@@ -219,21 +245,26 @@
     if (!coverNode) {
       return;
     }
-    coverNode.setAttribute("src", url || COVER_PLACEHOLDER_SRC);
+    coverNode.setAttribute("src", url || COVER_FALLBACK_SRC);
   }
 
-  function readItunesArtworkUrl(payload) {
+  function readItunesArtwork(payload) {
     if (!payload || typeof payload !== "object") {
-      return "";
+      return emptyArtworkData();
     }
     if (!payload.resultCount || !Array.isArray(payload.results) || !payload.results.length) {
-      return "";
+      return emptyArtworkData();
     }
     const firstResult = payload.results[0];
     if (!firstResult || typeof firstResult !== "object") {
-      return "";
+      return emptyArtworkData();
     }
-    return normalizeArtworkUrl(firstResult.artworkUrl100 || firstResult.artworkUrl60 || "");
+
+    return {
+      url: normalizeArtworkUrl(firstResult.artworkUrl100 || firstResult.artworkUrl60 || ""),
+      album: cleanText(firstResult.collectionName || firstResult.collectionCensoredName || ""),
+      year: readYear(firstResult.releaseDate || firstResult.releaseYear || ""),
+    };
   }
 
   function fetchCoverFromItunes(artist, track) {
@@ -254,7 +285,7 @@
         return response.json();
       })
       .then(function (payload) {
-        return readItunesArtworkUrl(payload);
+        return readItunesArtwork(payload);
       })
       .catch(function () {
         return fetch(fallbackEndpoint, { cache: "no-store", headers: { Accept: "application/json" } })
@@ -265,43 +296,59 @@
             return response.json();
           })
           .then(function (payload) {
-            return readItunesArtworkUrl(payload);
+            return readItunesArtwork(payload);
           })
           .catch(function () {
-            return "";
+            return emptyArtworkData();
           });
       });
   }
 
-  function ensureCover(coverNode, nowKey, artist, track) {
-    if (!coverNode) {
-      return;
+  function applyMetaRow(rowNode, valueNode, value, options) {
+    const settings = options && typeof options === "object" ? options : {};
+    const cleaned = cleanText(value);
+    const fallback = cleanText(settings.fallback);
+    if (valueNode) {
+      valueNode.textContent = cleaned || fallback;
     }
+    if (rowNode) {
+      rowNode.hidden = settings.hideWhenEmpty === true ? !cleaned : false;
+    }
+  }
+
+  function applyArtwork(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, artwork) {
+    const normalizedArtwork = artwork && typeof artwork === "object" ? artwork : emptyArtworkData();
+    applyCover(coverNode, normalizedArtwork.url);
+    applyMetaRow(albumRowNode, albumNode, normalizedArtwork.album, { fallback: NOW_UNAVAILABLE_LABEL });
+    applyMetaRow(yearRowNode, yearNode, normalizedArtwork.year, { fallback: NOW_UNAVAILABLE_LABEL });
+  }
+
+  function ensureCover(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, nowKey, artist, track) {
     if (!nowKey) {
-      applyCover(coverNode, "");
-      return;
+      const empty = emptyArtworkData();
+      applyArtwork(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, empty);
+      return Promise.resolve(empty);
     }
 
     const cachedCover = readCoverCache(nowKey);
-    if (cachedCover) {
-      applyCover(coverNode, cachedCover);
-      return;
+    if (cachedCover.url || cachedCover.album || cachedCover.year) {
+      applyArtwork(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, cachedCover);
+      return Promise.resolve(cachedCover);
     }
 
-    applyCover(coverNode, "");
-    fetchCoverFromItunes(artist, track).then(function (coverUrl) {
-      if (!coverUrl) {
-        applyCover(coverNode, "");
-        return;
+    applyArtwork(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, emptyArtworkData());
+    return fetchCoverFromItunes(artist, track).then(function (cover) {
+      if (!cover.url && !cover.album && !cover.year) {
+        return emptyArtworkData();
       }
-      writeCoverCache(nowKey, coverUrl);
-      applyCover(coverNode, coverUrl);
+      writeCoverCache(nowKey, cover);
+      return cover;
     });
   }
 
   function initNowPlayingCards() {
     document.querySelectorAll("[data-now-playing]").forEach(function (card) {
-      const endpoint = "/api/now-playing";
+      const endpoint = cleanText(card.getAttribute("data-now-endpoint")) || "/api/now-playing";
       const refreshEnabled = card.getAttribute("data-now-refresh") === "true";
       if (!endpoint || !refreshEnabled) {
         return;
@@ -309,37 +356,48 @@
 
       const trackNode = card.querySelector("[data-now-track]");
       const artistNode = card.querySelector("[data-now-artist]");
-      const artistWrapNode = card.querySelector("[data-now-artist-wrap]");
+      const artistRowNode = card.querySelector("[data-now-artist-row]");
+      const albumNode = card.querySelector("[data-now-album]");
+      const albumRowNode = card.querySelector("[data-now-album-row]");
+      const yearNode = card.querySelector("[data-now-year]");
+      const yearRowNode = card.querySelector("[data-now-year-row]");
       const coverNode = card.querySelector("[data-now-cover]");
       let currentNowKey = buildNowKey(
         artistNode ? artistNode.textContent : "",
         trackNode ? trackNode.textContent : ""
       );
 
-      if (coverNode) {
+      function refreshCover(artist, track) {
+        const fetchKey = currentNowKey;
         ensureCover(
           coverNode,
-          currentNowKey,
-          artistNode ? artistNode.textContent : "",
-          trackNode ? trackNode.textContent : ""
-        );
+          albumRowNode,
+          albumNode,
+          yearRowNode,
+          yearNode,
+          fetchKey,
+          artist,
+          track
+        ).then(function (cover) {
+          if (fetchKey !== currentNowKey) {
+            return;
+          }
+          applyArtwork(coverNode, albumRowNode, albumNode, yearRowNode, yearNode, cover);
+        });
       }
+
+      refreshCover(artistNode ? artistNode.textContent : "", trackNode ? trackNode.textContent : "");
 
       function applyNow(now) {
         if (trackNode) {
           trackNode.textContent = now.track;
         }
-        if (artistNode && now.artist) {
-          artistNode.textContent = now.artist;
-        }
-        if (artistWrapNode) {
-          artistWrapNode.hidden = !now.artist;
-        }
+        applyMetaRow(artistRowNode, artistNode, now.artist, { hideWhenEmpty: true });
 
         const nextNowKey = buildNowKey(now.artist, now.track);
         if (nextNowKey !== currentNowKey) {
           currentNowKey = nextNowKey;
-          ensureCover(coverNode, currentNowKey, now.artist, now.track);
+          refreshCover(now.artist, now.track);
         }
       }
 

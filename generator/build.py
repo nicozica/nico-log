@@ -116,7 +116,7 @@ def main() -> None:
     build_id = built_at.strftime("%Y%m%d%H%M%S")
     build_info = {
         "updated_iso": built_at.isoformat(),
-        "updated_label": built_at.strftime("%Y-%m-%d %H:%M"),
+        "updated_label": utils.format_datetime(built_at),
     }
     now_source_url = str(now_playing_settings.get("source_url", "")).strip()
     now_stream_url = str(now_playing_settings.get("stream_url", "")).strip() or "https://www.blurfm.com/"

@@ -62,6 +62,28 @@ def _to_spanish_description(value: Any) -> str:
     return DESCRIPTION_ALIASES.get(description, str(value))
 
 
+def _icon_for_description(value: Any) -> str:
+    description = str(value or "").strip().lower()
+    if not description:
+        return "cloud"
+
+    if any(token in description for token in ("tormenta", "thunderstorm")):
+        return "storm"
+    if any(token in description for token in ("llovizna", "drizzle")):
+        return "drizzle"
+    if any(token in description for token in ("lluvia", "rain", "chaparr")):
+        return "rain"
+    if any(token in description for token in ("nieve", "snow")):
+        return "snow"
+    if any(token in description for token in ("niebla", "mist", "fog", "haze", "neblina")):
+        return "mist"
+    if any(token in description for token in ("despejado", "soleado", "clear", "sun")):
+        return "sun"
+    if any(token in description for token in ("nublado", "cloud", "overcast")):
+        return "cloud"
+    return "cloud"
+
+
 def _fetch_weather(site: dict[str, Any]) -> dict[str, Any]:
     params = {
         "latitude": site.get("latitude"),
@@ -119,4 +141,5 @@ def fetch_weather(config: dict[str, Any], cache_dir: Path) -> tuple[dict[str, An
         "humidity_label": f"{humidity}%",
         "wind_label": f"{wind:.0f} km/h",
     }
+    item["icon"] = _icon_for_description(item["description"])
     return item, source
