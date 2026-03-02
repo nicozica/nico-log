@@ -1,5 +1,5 @@
 site:
-  title: nico // log
+  title: nico://log
   domain: https://www.nico.com.ar
   tagline: Website corriendo en 32 bits y 512 MB de RAM
   description: Portal low tech independiente, construido con archivos estáticos y datos en cache.
@@ -45,7 +45,12 @@ home:
 notes:
   page_size: 10
 
-weather_ttl_minutes: 30
+weather:
+  provider: weatherapi
+  ttl_minutes: 10
+  api_key_env: WEATHERAPI_KEY
+
+weather_ttl_minutes: 10
 feeds_ttl_minutes: 30
 status_ttl_minutes: 10
 now_ttl_minutes: 5
