@@ -14,7 +14,8 @@ html[data-theme="terminal"] {
 }
 
 html[data-theme="terminal"] body {
-  font-family: "Courier New", Courier, monospace;
+  font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
+    "DejaVu Sans Mono", monospace;
   background: linear-gradient(180deg, #0b1112 0%, #081014 100%);
 }
 
