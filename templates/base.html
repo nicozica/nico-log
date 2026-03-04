@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#0b0f0e" />
     <title>{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}</title>
     <meta name="description" content="{{ site.description }}" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="icon" href="/favicon.svg" />
+    <link rel="icon" href="/favicon-v2.svg" type="image/svg+xml" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="alternate" type="application/rss+xml" title="{{ site.title }} notas RSS" href="/notes/rss.xml" />
     <link rel="alternate" type="application/atom+xml" title="{{ site.title }} notas Atom" href="/notes/atom.xml" />
     <link rel="alternate" type="application/feed+json" title="{{ site.title }} Feed JSON" href="/notes/feed.json" />
@@ -56,6 +56,7 @@
       <span class="status-stale">(dato anterior)</span>
       {% endif %}
       {% endif %}
+      <span id="pizero-power" data-power-endpoint="/status/pizero-power.json">Pi Zero: — W</span>
     </div>
 
     <main id="content" class="page-content">
@@ -64,9 +65,10 @@
 
     <footer class="site-footer">
       <section class="webring" aria-label="Anillo web">
+        <span class="webring-title">Webring</span>
         {% for link in footer.links %}
           <a href="{{ link.href }}" target="_blank" rel="noopener noreferrer">
-            <span class="ring-label">enlace</span> {{ link.label }}
+            {{ link.label }}
           </a>
         {% endfor %}
       </section>

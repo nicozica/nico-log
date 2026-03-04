@@ -34,7 +34,7 @@ about:
   philosophy: |
     Este portal prioriza lo simple: primero estático, después dinámico solo cuando hace falta.
     Si una API externa falla, se reutiliza el último dato válido para mantener continuidad.
-  runtime: Raspberry Pi Zero 2W + NGINX + Cloudflare Tunnel
+  runtime: Raspberry Pi Zero 2 W + NGINX + Cloudflare Tunnel
   location: Nodo doméstico en Buenos Aires
 
 home:
@@ -58,6 +58,7 @@ now_ttl_minutes: 5
 now_playing:
   source_url: "/api/now-playing"
   stream_url: "https://www.blurfm.com/"
+  player_stream_url: "https://icecast.blurfm.com/high"
   timeout_sec: 3
   cache_ttl_sec: 60
   mount: ""

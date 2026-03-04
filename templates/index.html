@@ -38,9 +38,25 @@
         <span>{{ weather.description }}</span>
       </p>
       <p class="meta">Humedad {{ weather.humidity_label }} · Viento {{ weather.wind_label }}</p>
+      {% if weather.forecast %}
+      <div class="weather-forecast" aria-label="Pronóstico breve">
+        <ul class="forecast-list">
+          {% for day in weather.forecast %}
+          <li>
+            <span class="forecast-day">{{ day.label }}</span>
+            <span class="forecast-summary">
+              <span class="inline-icon" aria-hidden="true">{{ icons.inline(day.icon) }}</span>
+              <span class="sr-only">Condición {{ day.description }}.</span>
+              <span class="forecast-temps">{{ day.temp_range_label }}</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
     </section>
 
-    <section class="card now-playing" data-now-playing data-now-endpoint="{{ now_api_url }}" data-now-refresh="{{ 'true' if now.refresh_enabled else 'false' }}">
+    <section class="card now-playing" data-now-playing data-now-endpoint="{{ now_api_url }}" data-now-refresh="{{ 'true' if now.refresh_enabled else 'false' }}" data-now-stream-src="{{ now_player_stream_url }}">
       <h2 class="section-title">Ahora sonando</h2>
       <div class="now-playing-row">
         <img
@@ -74,8 +90,10 @@
             <span class="now-meta-value" data-now-year>{{ now.year or "No disponible" }}</span>
           </p>
           <div class="actions">
-            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Escuchar en Blur FM ↗</a>
+            <button class="np-toggle" id="np-toggle" type="button" data-np-toggle aria-label="Play Blur FM">▶</button>
+            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Abrir en Blur FM ↗</a>
           </div>
+          <audio id="np-audio" data-np-audio preload="none"></audio>
         </div>
       </div>
     </section>

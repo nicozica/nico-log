@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy from Pipa to Pipita and prepare runtime directories/systemd units.
-REMOTE_HOST="${1:-pipita}"
+# Deploy from Pipa to Pizero and prepare runtime directories/systemd units.
+REMOTE_HOST="${1:-pizero}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 REMOTE_REPO="/srv/repos/personal/nico.com.ar"
@@ -42,11 +42,11 @@ fi
 sudo mkdir -p "$REMOTE_WWW" "$REMOTE_CACHE" "$REMOTE_LOGS"
 sudo chown -R "$RUN_USER:$RUN_GROUP" "$REMOTE_WWW" "$REMOTE_CACHE" "$REMOTE_LOGS"
 
-sudo install -m 0644 "$REMOTE_REPO/systemd/pipita-portal-generate.service" /etc/systemd/system/pipita-portal-generate.service
-sudo install -m 0644 "$REMOTE_REPO/systemd/pipita-portal-generate.timer" /etc/systemd/system/pipita-portal-generate.timer
+sudo install -m 0644 "$REMOTE_REPO/systemd/pizero-portal-generate.service" /etc/systemd/system/pizero-portal-generate.service
+sudo install -m 0644 "$REMOTE_REPO/systemd/pizero-portal-generate.timer" /etc/systemd/system/pizero-portal-generate.timer
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now pipita-portal-generate.timer
+sudo systemctl enable --now pizero-portal-generate.timer
 
 "$REMOTE_VENV/bin/python" "$REMOTE_REPO/generator/build.py" \
   --cache-dir "$REMOTE_CACHE" \

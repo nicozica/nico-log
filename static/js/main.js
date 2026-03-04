@@ -7,6 +7,10 @@
   const NOW_UNAVAILABLE_LABEL = "No disponible";
   const COVER_CACHE_PREFIX = "cover|";
   const COVER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const STREAM_PLAY_LABEL = "Play Blur FM";
+  const STREAM_PAUSE_LABEL = "Pause Blur FM";
+  const STREAM_PLAY_ICON = "▶";
+  const STREAM_PAUSE_ICON = "⏸";
 
   function applyTheme(theme) {
     root.setAttribute("data-theme", theme);
@@ -348,11 +352,17 @@
 
   function initNowPlayingCards() {
     document.querySelectorAll("[data-now-playing]").forEach(function (card) {
+      if (card.dataset.nowPlayingInitialized === "true") {
+        return;
+      }
+
       const endpoint = cleanText(card.getAttribute("data-now-endpoint")) || "/api/now-playing";
       const refreshEnabled = card.getAttribute("data-now-refresh") === "true";
       if (!endpoint || !refreshEnabled) {
         return;
       }
+
+      card.dataset.nowPlayingInitialized = "true";
 
       const trackNode = card.querySelector("[data-now-track]");
       const artistNode = card.querySelector("[data-now-artist]");
@@ -430,8 +440,148 @@
       }
 
       refreshNow();
-      window.setInterval(refreshNow, 60000);
+      card.__nowPlayingIntervalId = window.setInterval(refreshNow, 60000);
     });
+  }
+
+  function setPlayerButtonState(button, isPlaying) {
+    if (!button) {
+      return;
+    }
+
+    button.textContent = isPlaying ? STREAM_PAUSE_ICON : STREAM_PLAY_ICON;
+    button.setAttribute("aria-label", isPlaying ? STREAM_PAUSE_LABEL : STREAM_PLAY_LABEL);
+  }
+
+  function initNowPlayingPlayer() {
+    document.querySelectorAll("[data-now-playing]").forEach(function (card) {
+      const button = card.querySelector("[data-np-toggle]");
+      const audio = card.querySelector("[data-np-audio]");
+      const streamUrl = cleanText(card.getAttribute("data-now-stream-src"));
+
+      if (!button || !audio || !streamUrl || button.dataset.playerInitialized === "true") {
+        return;
+      }
+
+      button.dataset.playerInitialized = "true";
+      setPlayerButtonState(button, !audio.paused);
+
+      function syncButtonState() {
+        setPlayerButtonState(button, !audio.paused);
+      }
+
+      button.addEventListener("click", function () {
+        if (!audio.src) {
+          audio.src = streamUrl;
+        }
+
+        if (audio.paused) {
+          audio
+            .play()
+            .then(function () {
+              syncButtonState();
+            })
+            .catch(function (error) {
+              console.error("Failed to start Blur FM stream", error);
+              audio.pause();
+              syncButtonState();
+            });
+          return;
+        }
+
+        audio.pause();
+        syncButtonState();
+      });
+
+      audio.addEventListener("play", syncButtonState);
+      audio.addEventListener("pause", syncButtonState);
+      audio.addEventListener("ended", syncButtonState);
+      audio.addEventListener("error", function () {
+        console.error("Blur FM stream playback error");
+        audio.pause();
+        syncButtonState();
+      });
+    });
+  }
+
+  function initPizeroPower() {
+    const powerNode = document.getElementById("pizero-power");
+    if (!powerNode) {
+      return;
+    }
+
+    const endpoint = cleanText(powerNode.getAttribute("data-power-endpoint")) || "/status/pizero-power.json";
+
+    function applyPayload(payload) {
+      if (!payload || typeof payload !== "object" || !payload.pizero || typeof payload.pizero !== "object") {
+        return;
+      }
+
+      const powerRawValue = Number(payload.pizero.power_raw);
+      const legacyPowerValue = Number(payload.pizero.power);
+      const powerValue = Number.isFinite(powerRawValue) ? powerRawValue : legacyPowerValue;
+      const powerEstimateValue = Number(payload.pizero.power_estimate_w);
+      const powerUnit = cleanText(payload.pizero.power_unit) || "W";
+      const voltageValue = Number(payload.pizero.voltage);
+      const voltageUnit = cleanText(payload.pizero.voltage_unit) || "V";
+      const totalEnergyValue = Number(payload.pizero.total_energy);
+      const totalEnergyUnit = cleanText(payload.pizero.total_energy_unit) || "kWh";
+
+      if (Number.isFinite(powerValue) && powerValue > 0) {
+        powerNode.textContent = "Pi Zero: " + powerValue.toFixed(1) + " " + powerUnit;
+      } else if (Number.isFinite(powerEstimateValue)) {
+        powerNode.textContent = "Pi Zero: ~" + powerEstimateValue.toFixed(1) + " W";
+      } else if (Number.isFinite(voltageValue) || Number.isFinite(totalEnergyValue)) {
+        const fallbackParts = [];
+        if (Number.isFinite(voltageValue)) {
+          fallbackParts.push(voltageValue.toFixed(1) + " " + voltageUnit);
+        }
+        if (Number.isFinite(totalEnergyValue)) {
+          fallbackParts.push(totalEnergyValue.toFixed(3) + " " + totalEnergyUnit);
+        }
+        powerNode.textContent = "Pi Zero: " + fallbackParts.join(" · ");
+      } else {
+        return;
+      }
+
+      if (Number.isFinite(voltageValue) || Number.isFinite(totalEnergyValue)) {
+        const details = [];
+        if (Number.isFinite(voltageValue)) {
+          details.push("Tensión " + voltageValue.toFixed(1) + " " + voltageUnit);
+        }
+        if (Number.isFinite(totalEnergyValue)) {
+          details.push("Energía total " + totalEnergyValue.toFixed(3) + " " + totalEnergyUnit);
+        }
+        powerNode.setAttribute("title", details.join(" · "));
+      }
+    }
+
+    function refreshPower() {
+      const separator = endpoint.includes("?") ? "&" : "?";
+      const requestUrl = endpoint + separator + "ts=" + Date.now();
+      fetch(requestUrl, { cache: "no-store", headers: { Accept: "application/json" } })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("pizero-power request failed");
+          }
+          return response.json();
+        })
+        .then(function (payload) {
+          applyPayload(payload);
+        })
+        .catch(function () {
+          // Keep the placeholder text when the live value is unavailable.
+        });
+    }
+
+    refreshPower();
+    window.setInterval(refreshPower, 30000);
+  }
+
+  function initPageFeatures() {
+    initNowPlayingCards();
+    initNowPlayingPlayer();
+    initPizeroPower();
   }
 
   applyTheme(readTheme());
@@ -444,5 +594,11 @@
     });
   }
 
-  initNowPlayingCards();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPageFeatures, { once: true });
+  } else {
+    initPageFeatures();
+  }
+
+  document.addEventListener("astro:page-load", initPageFeatures);
 })();

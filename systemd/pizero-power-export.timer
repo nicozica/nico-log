@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Pizero power metrics every 60 seconds
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+Persistent=true
+Unit=pizero-power-export.service
+
+[Install]
+WantedBy=timers.target

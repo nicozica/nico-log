@@ -1,11 +1,11 @@
 [Unit]
-Description=Run Pipita portal generator every 30 minutes
+Description=Run Pizero portal generator every 30 minutes
 
 [Timer]
 OnBootSec=3m
 OnUnitActiveSec=30m
 Persistent=true
-Unit=pipita-portal-generate.service
+Unit=pizero-portal-generate.service
 
 [Install]
 WantedBy=timers.target

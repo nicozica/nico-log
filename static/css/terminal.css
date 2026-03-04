@@ -20,7 +20,7 @@ html[data-theme="terminal"] body {
 
 html[data-theme="terminal"] .site-subtitle,
 html[data-theme="terminal"] .meta,
-html[data-theme="terminal"] .ring-label,
+html[data-theme="terminal"] .webring-title,
 html[data-theme="terminal"] .colophon {
   letter-spacing: 0.01em;
 }

@@ -2,7 +2,7 @@
 
 Static indie portal generated with Python, designed for a Raspberry Pi workflow:
 - Build/dev on Raspberry Pi 5 (`Pipa`)
-- Serve in production on Raspberry Pi Zero 2W (`Pipita`) via NGINX + Cloudflare Tunnel
+- Serve in production on Raspberry Pi Zero 2 W (`Pizero`) via NGINX + Cloudflare Tunnel
 
 ## Architecture
 
@@ -13,7 +13,7 @@ Static indie portal generated with Python, designed for a Raspberry Pi workflow:
 - `cache/`: runtime cache for dynamic fetches (ignored in git)
 - `dist/`: generated static output (ignored in git)
 - `scripts/`: helper scripts (build, new note, deploy)
-- `systemd/`: service + timer units for Pipita
+- `systemd/`: service + timer units for Pizero
 - `nginx/`: server block snippet
 
 ## Resilience model
@@ -58,15 +58,15 @@ This creates `content/notes/YYYY-MM-DD-slug.md` with front matter:
 
 Rebuild after editing.
 
-## Deploy to Pipita
+## Deploy to Pizero
 
 ```bash
-./scripts/deploy-pipita.sh pipita
+./scripts/deploy-pizero.sh pizero
 ```
 
 What it does:
 1. Runs local build on Pipa.
-2. Rsyncs repo to `/srv/repos/personal/nico.com.ar` on Pipita.
+2. Rsyncs repo to `/srv/repos/personal/nico.com.ar` on Pizero.
 3. Creates/updates remote venv and installs requirements.
 4. Ensures runtime folders:
    - `/srv/data/www/nico.com.ar`
@@ -77,11 +77,12 @@ What it does:
 
 ## Systemd runtime
 
-Unit: `systemd/pipita-portal-generate.service`
+Unit: `systemd/pizero-portal-generate.service`
 - oneshot build
 - sync `dist/ -> /srv/data/www/nico.com.ar`
+- optional env file: `/etc/default/pizero-portal-generate`
 
-Timer: `systemd/pipita-portal-generate.timer`
+Timer: `systemd/pizero-portal-generate.timer`
 - runs every 30 minutes
 - persistent across reboots
 
@@ -99,6 +100,18 @@ Use `nginx/nico.com.ar.conf` as a base snippet:
 - Notes: local markdown in `content/notes/`
 - Links: RSS feeds from `content/feeds.yaml`
 - Weather: Open-Meteo (`lat/lon` from `content/config.yaml`)
+- Weather provider can be switched to `WeatherAPI` via `content/config.yaml`
+- `WeatherAPI` key is read from env var `WEATHERAPI_KEY`
+- for systemd runtime on Pizero, store it in `/etc/default/pizero-portal-generate`
+
+Example:
+
+```bash
+sudo install -m 0600 systemd/pizero-portal-generate.env.example /etc/default/pizero-portal-generate
+sudoedit /etc/default/pizero-portal-generate
+sudo systemctl daemon-reload
+sudo systemctl restart pizero-portal-generate.service
+```
 - Status:
   - local systemd checks (services in `config.yaml`)
   - optional HTTP checks in `config.yaml`
@@ -130,6 +143,6 @@ Use `nginx/nico.com.ar.conf` as a base snippet:
   - expected when network is unavailable; check `cache/*.json` after successful run
 - Status shows `unknown` services:
   - expected on systems without `systemctl` or where service names differ
-- Timer not running on Pipita:
-  - `sudo systemctl status pipita-portal-generate.timer`
-  - `sudo journalctl -u pipita-portal-generate.service -n 100 --no-pager`
+- Timer not running on Pizero:
+  - `sudo systemctl status pizero-portal-generate.timer`
+  - `sudo journalctl -u pizero-portal-generate.service -n 100 --no-pager`

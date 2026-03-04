@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -13,19 +14,34 @@ except ModuleNotFoundError:  # pragma: no cover - runtime dependency fallback
 
 from . import utils
 
+PREVIEW_SOURCE_LIMITS = {
+    "Hacker News Frontpage": 1,
+    "The Verge": 1,
+}
 
-def _entry_datetime(entry: dict[str, Any]) -> datetime:
-    if entry.get("published"):
-        return utils.to_datetime(entry.get("published"))
-    if entry.get("updated"):
-        return utils.to_datetime(entry.get("updated"))
 
-    for field in ("published_parsed", "updated_parsed"):
+def _safe_datetime(value: Any) -> datetime | None:
+    if value in (None, ""):
+        return None
+
+    try:
+        return utils.to_datetime(value)
+    except Exception:
+        return None
+
+
+def _entry_datetime(entry: dict[str, Any]) -> datetime | None:
+    for field in ("published", "updated", "date", "created", "issued", "dc_date", "dc:date", "pubDate"):
+        parsed_value = _safe_datetime(entry.get(field))
+        if parsed_value is not None:
+            return parsed_value
+
+    for field in ("published_parsed", "updated_parsed", "created_parsed", "date_parsed"):
         parsed = entry.get(field)
         if parsed:
             return datetime(*parsed[:6], tzinfo=timezone.utc)
 
-    return datetime.now(tz=timezone.utc)
+    return None
 
 
 def _parse_xml_fallback(content: bytes) -> list[dict[str, str]]:
@@ -36,7 +52,14 @@ def _parse_xml_fallback(content: bytes) -> list[dict[str, str]]:
     for item in root.findall(".//{*}item"):
         title = (item.findtext("{*}title") or "(untitled)").strip()
         link = (item.findtext("{*}link") or "").strip()
-        published = (item.findtext("{*}pubDate") or item.findtext("{*}published") or "").strip()
+        published = (
+            item.findtext("{*}pubDate")
+            or item.findtext("{*}published")
+            or item.findtext("{*}updated")
+            or item.findtext("{http://purl.org/dc/elements/1.1/}date")
+            or item.findtext("{*}date")
+            or ""
+        ).strip()
         if link:
             entries.append({"title": title, "link": link, "published": published})
 
@@ -55,6 +78,8 @@ def _parse_xml_fallback(content: bytes) -> list[dict[str, str]]:
         published = (
             entry.findtext("{*}published")
             or entry.findtext("{*}updated")
+            or entry.findtext("{http://purl.org/dc/elements/1.1/}date")
+            or entry.findtext("{*}date")
             or ""
         ).strip()
         if link:
@@ -67,7 +92,7 @@ def _fetch_feed(feed_name: str, feed_url: str, timeout_seconds: int = 6) -> list
     response = requests.get(
         feed_url,
         timeout=timeout_seconds,
-        headers={"User-Agent": "pipita-portal/1.0 (+https://nico.com.ar)"},
+        headers={"User-Agent": "pizero-portal/1.0 (+https://nico.com.ar)"},
     )
     response.raise_for_status()
 
@@ -80,7 +105,7 @@ def _fetch_feed(feed_name: str, feed_url: str, timeout_seconds: int = 6) -> list
 
     for entry in parsed_entries:
         link = str(entry.get("link") or "").strip()
-        title = str(entry.get("title") or "(untitled)").strip()
+        title = html.unescape(str(entry.get("title") or "(untitled)")).strip()
         if not link:
             continue
 
@@ -90,7 +115,7 @@ def _fetch_feed(feed_name: str, feed_url: str, timeout_seconds: int = 6) -> list
                 "title": title,
                 "url": link,
                 "source": feed_name,
-                "published": published.isoformat(),
+                "published": published.isoformat() if published is not None else "",
             }
         )
 
@@ -133,7 +158,10 @@ def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: in
         if not all_items:
             raise RuntimeError("no feed data fetched")
 
-        all_items.sort(key=lambda item: utils.to_datetime(item["published"]), reverse=True)
+        all_items.sort(
+            key=lambda item: _safe_datetime(item.get("published")) or datetime.min.replace(tzinfo=timezone.utc),
+            reverse=True,
+        )
         return {
             "updated_at": datetime.now(tz=timezone.utc).isoformat(),
             "items": all_items[:limit],
@@ -149,15 +177,57 @@ def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: in
 
     items = []
     for raw in payload.get("items", [])[:limit]:
-        published = utils.to_datetime(raw.get("published"))
+        published = _safe_datetime(raw.get("published"))
         items.append(
             {
-                "title": str(raw.get("title", "(untitled)")),
+                "title": html.unescape(str(raw.get("title", "(untitled)"))),
                 "url": str(raw.get("url", "#")),
                 "source": str(raw.get("source", "feed")),
-                "published": published.isoformat(),
-                "published_label": utils.format_date(published),
+                "published": published.isoformat() if published is not None else "",
+                "published_label": utils.format_date(published) if published is not None else "",
             }
         )
 
     return items, source
+
+
+def select_preview_links(items: list[dict[str, Any]], limit: int = 6) -> list[dict[str, Any]]:
+    if limit <= 0:
+        return []
+
+    preview_candidates = items[: max(limit * 8, 24)]
+    selected: list[dict[str, Any]] = []
+    selected_urls: set[str] = set()
+    source_counts: dict[str, int] = {}
+
+    # First pass: maximize source diversity inside a recent candidate window.
+    for item in preview_candidates:
+        source = str(item.get("source", "")).strip()
+        url = str(item.get("url", "")).strip()
+        if not source or not url or url in selected_urls or source_counts.get(source, 0) >= 1:
+            continue
+
+        selected.append(item)
+        selected_urls.add(url)
+        source_counts[source] = source_counts.get(source, 0) + 1
+        if len(selected) >= limit:
+            return selected
+
+    # Second pass: fill remaining slots by recency with stricter caps on fast-moving sources.
+    for item in preview_candidates:
+        source = str(item.get("source", "")).strip()
+        url = str(item.get("url", "")).strip()
+        if not source or not url or url in selected_urls:
+            continue
+
+        source_cap = PREVIEW_SOURCE_LIMITS.get(source, 2)
+        if source_counts.get(source, 0) >= source_cap:
+            continue
+
+        selected.append(item)
+        selected_urls.add(url)
+        source_counts[source] = source_counts.get(source, 0) + 1
+        if len(selected) >= limit:
+            return selected
+
+    return selected[:limit]

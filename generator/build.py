@@ -101,13 +101,14 @@ def main() -> None:
             normalized_footer_links.append({"label": label, "href": href})
     footer = {"links": normalized_footer_links}
 
-    all_notes = notes.load_notes(content_dir / "notes")
+    all_notes = notes.load_notes(content_dir / "notes", site_domain=str(site.get("domain", "")))
     all_links, links_source = feeds.fetch_links(
         content_path=content_dir / "feeds.yaml",
         cache_dir=cache_dir,
         ttl_minutes=int(config.get("feeds_ttl_minutes", 30)),
         limit=120,
     )
+    links_preview = feeds.select_preview_links(all_links, limit=6)
     weather_data, weather_source = weather.fetch_weather(config, cache_dir)
     status_bundle, _ = status.fetch_status(config, cache_dir)
     now_data, now_history, now_source = now_playing.fetch_now(config, cache_dir, content_dir)
@@ -120,6 +121,9 @@ def main() -> None:
     }
     now_source_url = str(now_playing_settings.get("source_url", "")).strip()
     now_stream_url = str(now_playing_settings.get("stream_url", "")).strip() or "https://www.blurfm.com/"
+    now_player_stream_url = (
+        str(now_playing_settings.get("player_stream_url", "")).strip() or "https://stream.blurfm.com/high"
+    )
     now_api_url = now_source_url
     parsed_now_url = urlparse(now_source_url)
     if parsed_now_url.scheme and parsed_now_url.netloc:
@@ -164,6 +168,7 @@ def main() -> None:
         "build_id": build_id,
         "now_api_url": now_api_url,
         "now_stream_url": now_stream_url,
+        "now_player_stream_url": now_player_stream_url,
     }
 
     render_template(
@@ -175,7 +180,7 @@ def main() -> None:
             "page_title": "Inicio",
             "current_path": "/",
             "latest_notes": all_notes[:latest_notes_limit],
-            "links_preview": all_links[:6],
+            "links_preview": links_preview,
             "latest_notes_title": latest_notes_title,
             "latest_notes_subtitle": latest_notes_subtitle,
             "tiny_thing": tiny_thing,
@@ -285,9 +290,16 @@ def main() -> None:
 
     utils.copy_static_tree(static_dir, output_dir / "assets")
 
-    favicon_source = static_dir / "favicon.svg"
-    if favicon_source.exists():
-        (output_dir / "favicon.svg").write_text(favicon_source.read_text(encoding="utf-8"), encoding="utf-8")
+    # Publish favicon assets at the domain root so crawlers can discover them reliably.
+    favicon_svg_source = static_dir / "favicon.svg"
+    if favicon_svg_source.exists():
+        favicon_svg = favicon_svg_source.read_text(encoding="utf-8")
+        (output_dir / "favicon.svg").write_text(favicon_svg, encoding="utf-8")
+        (output_dir / "favicon-v2.svg").write_text(favicon_svg, encoding="utf-8")
+
+    favicon_ico_source = static_dir / "favicon.ico"
+    if favicon_ico_source.exists():
+        (output_dir / "favicon.ico").write_bytes(favicon_ico_source.read_bytes())
 
 
 if __name__ == "__main__":

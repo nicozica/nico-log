@@ -5,8 +5,10 @@ import json
 import re
 from datetime import datetime
 from email.utils import format_datetime
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import markdown
 import yaml
@@ -31,7 +33,115 @@ def _slug_from_path(path: Path) -> str:
     return utils.slugify(stem)
 
 
-def load_notes(notes_dir: Path) -> list[dict[str, Any]]:
+def _normalized_host(raw_url: str) -> str:
+    host = urlparse(raw_url).netloc.lower()
+    if host.startswith("www."):
+        return host[4:]
+    return host
+
+
+def _is_external_href(href: str, site_host: str) -> bool:
+    candidate = href.strip()
+    if not candidate or candidate.startswith(("#", "/", "./", "../")):
+        return False
+
+    parsed = urlparse(candidate)
+    if parsed.scheme not in {"http", "https"} and not parsed.netloc:
+        return False
+
+    target_host = parsed.netloc.lower()
+    if target_host.startswith("www."):
+        target_host = target_host[4:]
+
+    if not target_host:
+        return False
+    if not site_host:
+        return True
+    return target_host != site_host
+
+
+class _ExternalLinkHTMLRewriter(HTMLParser):
+    def __init__(self, site_host: str) -> None:
+        super().__init__(convert_charrefs=False)
+        self.site_host = site_host
+        self.parts: list[str] = []
+
+    def _serialize_attrs(self, attrs: list[tuple[str, str | None]]) -> str:
+        serialized: list[str] = []
+        for key, value in attrs:
+            if value is None:
+                serialized.append(key)
+            else:
+                serialized.append(f'{key}="{html.escape(value, quote=True)}"')
+        return "" if not serialized else " " + " ".join(serialized)
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.parts.append(self._render_tag(tag, attrs, closing=False))
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.parts.append(self._render_tag(tag, attrs, closing=True))
+
+    def _render_tag(self, tag: str, attrs: list[tuple[str, str | None]], closing: bool) -> str:
+        updated_attrs = attrs
+        if tag == "a":
+            attr_map = dict(attrs)
+            href = attr_map.get("href") or ""
+            if _is_external_href(href, self.site_host):
+                attr_map["target"] = "_blank"
+                existing_rel = {item for item in (attr_map.get("rel") or "").split() if item}
+                existing_rel.update({"noopener", "noreferrer"})
+                attr_map["rel"] = " ".join(sorted(existing_rel))
+
+                updated_attrs = []
+                seen: set[str] = set()
+                for key, value in attrs:
+                    if key in {"target", "rel"}:
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                    updated_attrs.append((key, attr_map[key]))
+
+                if "target" not in seen:
+                    updated_attrs.append(("target", attr_map["target"]))
+                if "rel" not in seen:
+                    updated_attrs.append(("rel", attr_map["rel"]))
+
+        suffix = " /" if closing else ""
+        return f"<{tag}{self._serialize_attrs(updated_attrs)}{suffix}>"
+
+    def handle_endtag(self, tag: str) -> None:
+        self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        self.parts.append(data)
+
+    def handle_entityref(self, name: str) -> None:
+        self.parts.append(f"&{name};")
+
+    def handle_charref(self, name: str) -> None:
+        self.parts.append(f"&#{name};")
+
+    def handle_comment(self, data: str) -> None:
+        self.parts.append(f"<!--{data}-->")
+
+    def handle_decl(self, decl: str) -> None:
+        self.parts.append(f"<!{decl}>")
+
+    def handle_pi(self, data: str) -> None:
+        self.parts.append(f"<?{data}>")
+
+    def rewritten_html(self) -> str:
+        return "".join(self.parts)
+
+
+def _rewrite_external_links(html_text: str, site_domain: str) -> str:
+    parser = _ExternalLinkHTMLRewriter(_normalized_host(site_domain))
+    parser.feed(html_text)
+    parser.close()
+    return parser.rewritten_html()
+
+
+def load_notes(notes_dir: Path, site_domain: str = "") -> list[dict[str, Any]]:
     renderer = markdown.Markdown(extensions=["extra", "sane_lists"])
     notes: list[dict[str, Any]] = []
 
@@ -46,6 +156,7 @@ def load_notes(notes_dir: Path) -> list[dict[str, Any]]:
 
         # Reset parser state between files.
         renderer.reset()
+        rendered_html = _rewrite_external_links(renderer.convert(body), site_domain)
 
         notes.append(
             {
@@ -57,7 +168,7 @@ def load_notes(notes_dir: Path) -> list[dict[str, Any]]:
                 "tags": tags,
                 "excerpt": utils.excerpt_from_markdown(body),
                 "body": body,
-                "html": renderer.convert(body),
+                "html": rendered_html,
             }
         )
 
