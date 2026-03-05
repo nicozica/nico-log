@@ -52,11 +52,7 @@
       {% if status_summary.metrics_available %}
       <span><strong>Uptime:</strong> {{ status_summary.uptime_label }}</span>
       <span><strong>Temp CPU:</strong> {{ status_summary.cpu_temp_label }}</span>
-      {% if status_summary.metrics_stale %}
-      <span class="status-stale">(dato anterior)</span>
       {% endif %}
-      {% endif %}
-      <span id="pizero-power" data-power-endpoint="/status/pizero-power.json">Pi Zero: — W</span>
     </div>
 
     <main id="content" class="page-content">

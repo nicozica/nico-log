@@ -8,9 +8,12 @@
   const COVER_CACHE_PREFIX = "cover|";
   const COVER_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   const STREAM_PLAY_LABEL = "Play Blur FM";
-  const STREAM_PAUSE_LABEL = "Pause Blur FM";
+  const STREAM_STOP_LABEL = "Stop Blur FM";
   const STREAM_PLAY_ICON = "▶";
-  const STREAM_PAUSE_ICON = "⏸";
+  const STREAM_STOP_ICON = "■";
+  const STREAM_FADE_IN_DURATION_MS = 1000;
+  const STREAM_FADE_IN_STEP_MS = 50;
+  const STREAM_TARGET_VOLUME = 1;
 
   function applyTheme(theme) {
     root.setAttribute("data-theme", theme);
@@ -449,8 +452,64 @@
       return;
     }
 
-    button.textContent = isPlaying ? STREAM_PAUSE_ICON : STREAM_PLAY_ICON;
-    button.setAttribute("aria-label", isPlaying ? STREAM_PAUSE_LABEL : STREAM_PLAY_LABEL);
+    button.textContent = isPlaying ? STREAM_STOP_ICON : STREAM_PLAY_ICON;
+    button.setAttribute("aria-label", isPlaying ? STREAM_STOP_LABEL : STREAM_PLAY_LABEL);
+  }
+
+  function buildLiveStreamUrl(streamUrl) {
+    const separator = streamUrl.includes("?") ? "&" : "?";
+    return streamUrl + separator + "ts=" + Date.now();
+  }
+
+  function clearStreamFade(audio) {
+    if (audio.__fadeInIntervalId) {
+      window.clearInterval(audio.__fadeInIntervalId);
+      audio.__fadeInIntervalId = 0;
+    }
+  }
+
+  function runStreamFadeIn(audio) {
+    clearStreamFade(audio);
+    audio.volume = 0;
+
+    const steps = Math.max(1, Math.ceil(STREAM_FADE_IN_DURATION_MS / STREAM_FADE_IN_STEP_MS));
+    const volumeStep = STREAM_TARGET_VOLUME / steps;
+
+    audio.__fadeInIntervalId = window.setInterval(function () {
+      if (audio.paused || audio.ended) {
+        clearStreamFade(audio);
+        return;
+      }
+
+      const nextVolume = Math.min(STREAM_TARGET_VOLUME, audio.volume + volumeStep);
+      audio.volume = nextVolume;
+
+      if (nextVolume >= STREAM_TARGET_VOLUME) {
+        clearStreamFade(audio);
+      }
+    }, STREAM_FADE_IN_STEP_MS);
+  }
+
+  function stopStreamPlayback(audio) {
+    clearStreamFade(audio);
+    audio.pause();
+    audio.volume = STREAM_TARGET_VOLUME;
+    try {
+      audio.currentTime = 0;
+    } catch (error) {
+      // Some streams are not seekable; resetting src/load still clears buffered delay.
+    }
+    audio.removeAttribute("src");
+    audio.load();
+  }
+
+  function startStreamPlayback(audio, streamUrl) {
+    clearStreamFade(audio);
+    audio.src = buildLiveStreamUrl(streamUrl);
+    audio.volume = 0;
+    return audio.play().then(function () {
+      runStreamFadeIn(audio);
+    });
   }
 
   function initNowPlayingPlayer() {
@@ -471,25 +530,20 @@
       }
 
       button.addEventListener("click", function () {
-        if (!audio.src) {
-          audio.src = streamUrl;
-        }
-
         if (audio.paused) {
-          audio
-            .play()
+          startStreamPlayback(audio, streamUrl)
             .then(function () {
               syncButtonState();
             })
             .catch(function (error) {
               console.error("Failed to start Blur FM stream", error);
-              audio.pause();
+              stopStreamPlayback(audio);
               syncButtonState();
             });
           return;
         }
 
-        audio.pause();
+        stopStreamPlayback(audio);
         syncButtonState();
       });
 
@@ -498,90 +552,15 @@
       audio.addEventListener("ended", syncButtonState);
       audio.addEventListener("error", function () {
         console.error("Blur FM stream playback error");
-        audio.pause();
+        stopStreamPlayback(audio);
         syncButtonState();
       });
     });
   }
 
-  function initPizeroPower() {
-    const powerNode = document.getElementById("pizero-power");
-    if (!powerNode) {
-      return;
-    }
-
-    const endpoint = cleanText(powerNode.getAttribute("data-power-endpoint")) || "/status/pizero-power.json";
-
-    function applyPayload(payload) {
-      if (!payload || typeof payload !== "object" || !payload.pizero || typeof payload.pizero !== "object") {
-        return;
-      }
-
-      const powerRawValue = Number(payload.pizero.power_raw);
-      const legacyPowerValue = Number(payload.pizero.power);
-      const powerValue = Number.isFinite(powerRawValue) ? powerRawValue : legacyPowerValue;
-      const powerEstimateValue = Number(payload.pizero.power_estimate_w);
-      const powerUnit = cleanText(payload.pizero.power_unit) || "W";
-      const voltageValue = Number(payload.pizero.voltage);
-      const voltageUnit = cleanText(payload.pizero.voltage_unit) || "V";
-      const totalEnergyValue = Number(payload.pizero.total_energy);
-      const totalEnergyUnit = cleanText(payload.pizero.total_energy_unit) || "kWh";
-
-      if (Number.isFinite(powerValue) && powerValue > 0) {
-        powerNode.textContent = "Pi Zero: " + powerValue.toFixed(1) + " " + powerUnit;
-      } else if (Number.isFinite(powerEstimateValue)) {
-        powerNode.textContent = "Pi Zero: ~" + powerEstimateValue.toFixed(1) + " W";
-      } else if (Number.isFinite(voltageValue) || Number.isFinite(totalEnergyValue)) {
-        const fallbackParts = [];
-        if (Number.isFinite(voltageValue)) {
-          fallbackParts.push(voltageValue.toFixed(1) + " " + voltageUnit);
-        }
-        if (Number.isFinite(totalEnergyValue)) {
-          fallbackParts.push(totalEnergyValue.toFixed(3) + " " + totalEnergyUnit);
-        }
-        powerNode.textContent = "Pi Zero: " + fallbackParts.join(" · ");
-      } else {
-        return;
-      }
-
-      if (Number.isFinite(voltageValue) || Number.isFinite(totalEnergyValue)) {
-        const details = [];
-        if (Number.isFinite(voltageValue)) {
-          details.push("Tensión " + voltageValue.toFixed(1) + " " + voltageUnit);
-        }
-        if (Number.isFinite(totalEnergyValue)) {
-          details.push("Energía total " + totalEnergyValue.toFixed(3) + " " + totalEnergyUnit);
-        }
-        powerNode.setAttribute("title", details.join(" · "));
-      }
-    }
-
-    function refreshPower() {
-      const separator = endpoint.includes("?") ? "&" : "?";
-      const requestUrl = endpoint + separator + "ts=" + Date.now();
-      fetch(requestUrl, { cache: "no-store", headers: { Accept: "application/json" } })
-        .then(function (response) {
-          if (!response.ok) {
-            throw new Error("pizero-power request failed");
-          }
-          return response.json();
-        })
-        .then(function (payload) {
-          applyPayload(payload);
-        })
-        .catch(function () {
-          // Keep the placeholder text when the live value is unavailable.
-        });
-    }
-
-    refreshPower();
-    window.setInterval(refreshPower, 30000);
-  }
-
   function initPageFeatures() {
     initNowPlayingCards();
     initNowPlayingPlayer();
-    initPizeroPower();
   }
 
   applyTheme(readTheme());
