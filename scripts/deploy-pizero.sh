@@ -5,13 +5,16 @@ set -euo pipefail
 REMOTE_HOST="${1:-pizero}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-REMOTE_REPO="/srv/repos/personal/nico.com.ar"
+REMOTE_REPO="/srv/repos/personal/argensonix/nico.com.ar"
 REMOTE_VENV="$REMOTE_REPO/.venv"
 REMOTE_WWW="/srv/data/www/nico.com.ar"
 REMOTE_CACHE="/srv/data/nico-portal-cache"
 REMOTE_LOGS="/srv/logs/nico-portal"
+REMOTE_REPO_PARENT="$(dirname "$REMOTE_REPO")"
 
 "$ROOT_DIR/scripts/dev-build.sh"
+
+ssh "$REMOTE_HOST" "sudo mkdir -p '$REMOTE_REPO_PARENT' && sudo chown -R \"\$(id -un):\$(id -gn)\" '$REMOTE_REPO_PARENT'"
 
 rsync -az --delete \
   --exclude '.git/' \
@@ -23,7 +26,7 @@ rsync -az --delete \
 ssh "$REMOTE_HOST" "bash -s" <<'REMOTE_EOF'
 set -euo pipefail
 
-REMOTE_REPO="/srv/repos/personal/nico.com.ar"
+REMOTE_REPO="/srv/repos/personal/argensonix/nico.com.ar"
 REMOTE_VENV="$REMOTE_REPO/.venv"
 REMOTE_WWW="/srv/data/www/nico.com.ar"
 REMOTE_CACHE="/srv/data/nico-portal-cache"
