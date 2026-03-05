@@ -1,8 +1,0 @@
-[Unit]
-Description=Export Pizero power metrics for nico.com.ar
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/srv/data/nico-log/pizero-power.sh
