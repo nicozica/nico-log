@@ -163,12 +163,6 @@ button:focus-visible {
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
-.status-stale {
-  color: var(--muted);
-  opacity: 0.85;
-  font-size: 0.9em;
-}
-
 .page-content {
   padding: var(--space-4) 0 calc(var(--space-4) * 1.8);
   display: grid;
@@ -437,7 +431,9 @@ button:focus-visible {
   color: var(--text);
   padding: 0;
   cursor: pointer;
-  font: inherit;
+  font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono",
+    "DejaVu Sans Mono", monospace;
+  font-size: 1rem;
   line-height: 1;
   transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
 }
@@ -549,6 +545,12 @@ button.copy-btn {
   word-break: normal;
 }
 
+.now-playing [data-now-album-row],
+.now-playing [data-now-year-row] {
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
 .np-cover {
   width: 64px;
   height: 64px;
@@ -606,6 +608,15 @@ button.copy-btn {
 .note-body p,
 .prose p {
   max-width: 70ch;
+}
+
+.note-card strong,
+.note-card b,
+.note-body strong,
+.note-body b,
+.prose strong,
+.prose b {
+  font-weight: 700;
 }
 
 .about-story {

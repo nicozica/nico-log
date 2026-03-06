@@ -15,7 +15,7 @@ import yaml
 
 from . import utils
 
-FRONT_MATTER_PATTERN = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
+FRONT_MATTER_PATTERN = re.compile(r"^---\r?\n(.*?)\r?\n---\r?\n?(.*)$", re.DOTALL)
 
 
 def _split_front_matter(raw: str) -> tuple[dict[str, Any], str]:
@@ -24,12 +24,17 @@ def _split_front_matter(raw: str) -> tuple[dict[str, Any], str]:
         return {}, raw
 
     front_raw, body = match.groups()
-    data = yaml.safe_load(front_raw) or {}
+    try:
+        data = yaml.safe_load(front_raw) or {}
+    except yaml.YAMLError:
+        # Keep publishing even when front matter is malformed.
+        return {}, body.strip()
     return data, body.strip()
 
 
 def _slug_from_path(path: Path) -> str:
-    stem = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", path.stem)
+    stem = re.sub(r"(?:\.md)+$", "", path.stem, flags=re.IGNORECASE)
+    stem = re.sub(r"^\d{4}-\d{2}-\d{2}-", "", stem)
     return utils.slugify(stem)
 
 
@@ -152,11 +157,15 @@ def load_notes(notes_dir: Path, site_domain: str = "") -> list[dict[str, Any]]:
         dt = utils.to_datetime(meta.get("date"))
         slug = utils.slugify(str(meta.get("slug") or _slug_from_path(path)))
         title = str(meta.get("title") or slug.replace("-", " ").title())
-        tags = [str(tag) for tag in meta.get("tags", [])]
+        raw_tags = meta.get("tags", [])
+        if not isinstance(raw_tags, list):
+            raw_tags = []
+        tags = [str(tag) for tag in raw_tags]
 
         # Reset parser state between files.
         renderer.reset()
         rendered_html = _rewrite_external_links(renderer.convert(body), site_domain)
+        excerpt_html = utils.excerpt_html_from_rendered_html(rendered_html)
 
         notes.append(
             {
@@ -167,6 +176,7 @@ def load_notes(notes_dir: Path, site_domain: str = "") -> list[dict[str, Any]]:
                 "date_label": utils.format_date(dt),
                 "tags": tags,
                 "excerpt": utils.excerpt_from_markdown(body),
+                "excerpt_html": excerpt_html,
                 "body": body,
                 "html": rendered_html,
             }

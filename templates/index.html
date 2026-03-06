@@ -16,7 +16,7 @@
           <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
           <p class="meta">{{ note.date_label }}</p>
         </header>
-        <p>{{ note.excerpt }}</p>
+        <p>{{ note.excerpt_html | safe }}</p>
         <p class="tags">
           {% for tag in note.tags %}
             <span class="pill">{{ tag }}</span>
@@ -29,7 +29,7 @@
   </div>
 
   <aside class="home-side" aria-label="Columna lateral">
-    <section class="card compact">
+    <section class="card compact weather-card">
       <h2 class="section-title">Clima · {{ site.city }}</h2>
       <p class="metric">{{ weather.temp_label }}</p>
       <p class="weather-condition">
