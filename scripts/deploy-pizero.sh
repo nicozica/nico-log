@@ -1,61 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy from Pipa to Pizero and prepare runtime directories/systemd units.
+# Deploy static output from Pipa to Pizero.
+# Pipa is the only build scheduler; Pizero only serves static files.
 REMOTE_HOST="${1:-pizero}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-REMOTE_REPO="/srv/repos/personal/argensonix/nico.com.ar"
-REMOTE_VENV="$REMOTE_REPO/.venv"
 REMOTE_WWW="/srv/data/www/nico.com.ar"
-REMOTE_CACHE="/srv/data/nico-portal-cache"
-REMOTE_LOGS="/srv/logs/nico-portal"
-REMOTE_REPO_PARENT="$(dirname "$REMOTE_REPO")"
 
 "$ROOT_DIR/scripts/dev-build.sh"
 
-ssh "$REMOTE_HOST" "sudo mkdir -p '$REMOTE_REPO_PARENT' && sudo chown -R \"\$(id -un):\$(id -gn)\" '$REMOTE_REPO_PARENT'"
+ssh "$REMOTE_HOST" "sudo mkdir -p '$REMOTE_WWW' && sudo chown -R \"\$(id -un):\$(id -gn)\" '$REMOTE_WWW' && sudo systemctl disable --now pizero-portal-generate.timer >/dev/null 2>&1 || true"
 
-rsync -az --delete \
-  --exclude '.git/' \
-  --exclude '.venv/' \
-  --exclude 'dist/' \
-  --exclude 'cache/' \
-  "$ROOT_DIR/" "$REMOTE_HOST:$REMOTE_REPO/"
-
-ssh "$REMOTE_HOST" "bash -s" <<'REMOTE_EOF'
-set -euo pipefail
-
-REMOTE_REPO="/srv/repos/personal/argensonix/nico.com.ar"
-REMOTE_VENV="$REMOTE_REPO/.venv"
-REMOTE_WWW="/srv/data/www/nico.com.ar"
-REMOTE_CACHE="/srv/data/nico-portal-cache"
-REMOTE_LOGS="/srv/logs/nico-portal"
-RUN_USER="$(id -un)"
-RUN_GROUP="$(id -gn)"
-
-if [ ! -x "$REMOTE_VENV/bin/pip" ] || [ ! -x "$REMOTE_VENV/bin/python" ]; then
-  rm -rf "$REMOTE_VENV"
-  python3 -m venv "$REMOTE_VENV"
-fi
-
-"$REMOTE_VENV/bin/pip" install --upgrade pip
-"$REMOTE_VENV/bin/pip" install -r "$REMOTE_REPO/requirements.txt"
-
-sudo mkdir -p "$REMOTE_WWW" "$REMOTE_CACHE" "$REMOTE_LOGS"
-sudo chown -R "$RUN_USER:$RUN_GROUP" "$REMOTE_WWW" "$REMOTE_CACHE" "$REMOTE_LOGS"
-
-sudo install -m 0644 "$REMOTE_REPO/systemd/pizero-portal-generate.service" /etc/systemd/system/pizero-portal-generate.service
-sudo install -m 0644 "$REMOTE_REPO/systemd/pizero-portal-generate.timer" /etc/systemd/system/pizero-portal-generate.timer
-
-sudo systemctl daemon-reload
-sudo systemctl enable --now pizero-portal-generate.timer
-
-"$REMOTE_VENV/bin/python" "$REMOTE_REPO/generator/build.py" \
-  --cache-dir "$REMOTE_CACHE" \
-  --output-dir "$REMOTE_REPO/dist"
-
-rsync -a --delete "$REMOTE_REPO/dist/" "$REMOTE_WWW/"
-REMOTE_EOF
+rsync -az --delete "$ROOT_DIR/dist/" "$REMOTE_HOST:$REMOTE_WWW/"
 
 echo "Deploy complete to $REMOTE_HOST"

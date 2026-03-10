@@ -13,7 +13,6 @@ Static indie portal generated with Python, designed for a Raspberry Pi workflow:
 - `cache/`: runtime cache for dynamic fetches (ignored in git)
 - `dist/`: generated static output (ignored in git)
 - `scripts/`: helper scripts (build, new note, deploy)
-- `systemd/`: service + timer units for Pizero
 - `nginx/`: server block snippet
 
 ## Resilience model
@@ -66,25 +65,13 @@ Rebuild after editing.
 
 What it does:
 1. Runs local build on Pipa.
-2. Rsyncs repo to `/srv/repos/personal/nico.com.ar` on Pizero.
-3. Creates/updates remote venv and installs requirements.
-4. Ensures runtime folders:
-   - `/srv/data/www/nico.com.ar`
-   - `/srv/data/nico-portal-cache`
-   - `/srv/logs/nico-portal`
-5. Installs systemd unit/timer under `/etc/systemd/system/`.
-6. Enables timer and runs initial build + sync to web root.
+2. Ensures `/srv/data/www/nico.com.ar` exists on Pizero.
+3. Disables legacy `pizero-portal-generate.timer` if present.
+4. Rsyncs `dist/` to `/srv/data/www/nico.com.ar/`.
 
-## Systemd runtime
-
-Unit: `systemd/pizero-portal-generate.service`
-- oneshot build
-- sync `dist/ -> /srv/data/www/nico.com.ar`
-- optional env file: `/etc/default/pizero-portal-generate`
-
-Timer: `systemd/pizero-portal-generate.timer`
-- runs every 30 minutes
-- persistent across reboots
+Scheduler model:
+- Build timer runs only on Pipa (`nico-log-build.timer`).
+- Pizero only serves static files via NGINX.
 
 ## NGINX
 
@@ -102,16 +89,6 @@ Use `nginx/nico.com.ar.conf` as a base snippet:
 - Weather: Open-Meteo (`lat/lon` from `content/config.yaml`)
 - Weather provider can be switched to `WeatherAPI` via `content/config.yaml`
 - `WeatherAPI` key is read from env var `WEATHERAPI_KEY`
-- for systemd runtime on Pizero, store it in `/etc/default/pizero-portal-generate`
-
-Example:
-
-```bash
-sudo install -m 0600 systemd/pizero-portal-generate.env.example /etc/default/pizero-portal-generate
-sudoedit /etc/default/pizero-portal-generate
-sudo systemctl daemon-reload
-sudo systemctl restart pizero-portal-generate.service
-```
 - Status:
   - local systemd checks (services in `config.yaml`)
   - optional HTTP checks in `config.yaml`
@@ -128,7 +105,6 @@ sudo systemctl restart pizero-portal-generate.service
 - `dist/notes/<slug>/index.html`
 - `dist/links/index.html`
 - `dist/now/index.html`
-- `dist/status/index.html`
 - `dist/about/index.html`
 - `dist/notes/rss.xml`
 - `dist/notes/atom.xml`
@@ -143,6 +119,6 @@ sudo systemctl restart pizero-portal-generate.service
   - expected when network is unavailable; check `cache/*.json` after successful run
 - Status shows `unknown` services:
   - expected on systems without `systemctl` or where service names differ
-- Timer not running on Pizero:
-  - `sudo systemctl status pizero-portal-generate.timer`
-  - `sudo journalctl -u pizero-portal-generate.service -n 100 --no-pager`
+- Timer not running on Pipa:
+  - `sudo systemctl status nico-log-build.timer`
+  - `sudo journalctl -u nico-log-build.service -n 100 --no-pager`

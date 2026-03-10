@@ -4,7 +4,26 @@
 <section class="section-head">
   <h2 class="section-title">Notas</h2>
   <p>Bitácora editorial, ordenada de más nueva a más antigua.</p>
+  <p class="notes-summary">{{ notes_total }} notas publicadas.</p>
 </section>
+
+{% if pagination.total_pages > 1 %}
+<nav class="pagination pagination-top" aria-label="Paginación de notas">
+  {% if pagination.has_prev %}
+    <a href="{{ pagination.prev_url }}">Más nuevas</a>
+  {% else %}
+    <span class="pagination-disabled">Más nuevas</span>
+  {% endif %}
+
+  <span class="pagination-meta">Página {{ pagination.page }} de {{ pagination.total_pages }}</span>
+
+  {% if pagination.has_next %}
+    <a href="{{ pagination.next_url }}">Más antiguas</a>
+  {% else %}
+    <span class="pagination-disabled">Más antiguas</span>
+  {% endif %}
+</nav>
+{% endif %}
 
 <div class="stack">
   {% for note in notes %}
@@ -26,17 +45,17 @@
 {% if pagination.total_pages > 1 %}
 <nav class="pagination" aria-label="Paginación de notas">
   {% if pagination.has_prev %}
-    <a href="{{ pagination.prev_url }}">Anterior</a>
+    <a href="{{ pagination.prev_url }}">Más nuevas</a>
   {% else %}
-    <span class="pagination-disabled">Anterior</span>
+    <span class="pagination-disabled">Más nuevas</span>
   {% endif %}
 
   <span class="pagination-meta">Página {{ pagination.page }} de {{ pagination.total_pages }}</span>
 
   {% if pagination.has_next %}
-    <a href="{{ pagination.next_url }}">Siguiente</a>
+    <a href="{{ pagination.next_url }}">Más antiguas</a>
   {% else %}
-    <span class="pagination-disabled">Siguiente</span>
+    <span class="pagination-disabled">Más antiguas</span>
   {% endif %}
 </nav>
 {% endif %}
