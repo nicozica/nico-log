@@ -4,7 +4,9 @@ import json
 import re
 import shutil
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from html import escape
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Callable
 
@@ -84,6 +86,8 @@ def fetch_json_with_cache(
 def to_datetime(value: Any) -> datetime:
     if isinstance(value, datetime):
         dt = value
+    elif isinstance(value, date):
+        dt = datetime(value.year, value.month, value.day, tzinfo=timezone.utc)
     elif isinstance(value, (int, float)):
         dt = datetime.fromtimestamp(float(value), tz=timezone.utc)
     elif isinstance(value, str) and value.strip():
@@ -117,11 +121,76 @@ def excerpt_from_markdown(body: str, words: int = 45) -> str:
     text = re.sub(r"\[(.*?)\]\(.*?\)", r"\1", text)
     text = re.sub(r"[#>*_~\-]", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
+    text = re.sub(r"\s+([,.;:!?%\)\]\}])", r"\1", text)
+    text = re.sub(r"([\(\[\{])\s+", r"\1", text)
 
     chunks = text.split(" ")
     if len(chunks) <= words:
         return text
     return " ".join(chunks[:words]).strip() + "…"
+
+
+class _ExcerptHTMLParser(HTMLParser):
+    def __init__(self, words_limit: int) -> None:
+        super().__init__(convert_charrefs=False)
+        self.words_limit = max(1, words_limit)
+        self.words_count = 0
+        self.truncated = False
+        self.parts: list[str] = []
+        self.strong_stack = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if self.truncated:
+            return
+        if tag == "strong":
+            self.parts.append("<strong>")
+            self.strong_stack += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "strong" and self.strong_stack > 0:
+            self.parts.append("</strong>")
+            self.strong_stack -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self.truncated or not data:
+            return
+
+        chunks = re.split(r"(\s+)", data)
+        for chunk in chunks:
+            if not chunk:
+                continue
+            if re.fullmatch(r"\s+", chunk):
+                if self.parts:
+                    self.parts.append(chunk)
+                continue
+
+            if self.words_count >= self.words_limit:
+                self.truncated = True
+                break
+
+            self.parts.append(escape(chunk))
+            self.words_count += 1
+
+    def result(self) -> str:
+        while self.strong_stack > 0:
+            self.parts.append("</strong>")
+            self.strong_stack -= 1
+
+        text = "".join(self.parts).strip()
+        text = re.sub(r"\s+([,.;:!?%\)\]\}])", r"\1", text)
+        text = re.sub(r"([\(\[\{])\s+", r"\1", text)
+        return text
+
+
+def excerpt_html_from_rendered_html(rendered_html: str, words: int = 45) -> str:
+    parser = _ExcerptHTMLParser(words_limit=words)
+    parser.feed(rendered_html)
+    parser.close()
+
+    excerpt_html = parser.result()
+    if parser.truncated and excerpt_html:
+        return excerpt_html.rstrip() + "…"
+    return excerpt_html
 
 
 def clean_output_dir(path: Path) -> None:

@@ -25,3 +25,31 @@ html[data-theme="terminal"] .webring-title,
 html[data-theme="terminal"] .colophon {
   letter-spacing: 0.01em;
 }
+
+html[data-theme="terminal"] .webring-title {
+  font-family: inherit;
+}
+
+html[data-theme="terminal"] .metric,
+html[data-theme="terminal"] .weather-condition,
+html[data-theme="terminal"] .weather-condition span,
+html[data-theme="terminal"] .weather-forecast,
+html[data-theme="terminal"] .forecast-day,
+html[data-theme="terminal"] .forecast-summary,
+html[data-theme="terminal"] .forecast-temps {
+  font-family: inherit;
+}
+
+html[data-theme="terminal"] .weather-card,
+html[data-theme="terminal"] .weather-card * {
+  font-family: inherit;
+}
+
+html[data-theme="terminal"] .note-card strong,
+html[data-theme="terminal"] .note-card b,
+html[data-theme="terminal"] .note-body strong,
+html[data-theme="terminal"] .note-body b,
+html[data-theme="terminal"] .prose strong,
+html[data-theme="terminal"] .prose b {
+  font-weight: 800;
+}

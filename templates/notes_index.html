@@ -32,7 +32,7 @@
         <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
         <p class="meta">{{ note.date_label }}</p>
       </header>
-      <p>{{ note.excerpt }}</p>
+      <p>{{ note.excerpt_html | safe }}</p>
       <p class="tags">
         {% for tag in note.tags %}
           <span class="pill">{{ tag }}</span>
