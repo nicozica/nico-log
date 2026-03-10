@@ -139,6 +139,7 @@ def main() -> None:
     latest_notes_subtitle = str(home_settings.get("latest_notes_subtitle", "")).strip()
     latest_notes_limit = _to_positive_int(home_settings.get("latest_notes_limit", 4), default=4)
     notes_page_size = _to_positive_int(notes_settings.get("page_size", 10), default=10)
+    total_notes = len(all_notes)
     status_summary = status_bundle.get("summary", {})
     tiny_thing = utils.pick_tiny_thing(tiny_lines, built_at)
 
@@ -180,6 +181,7 @@ def main() -> None:
             "page_title": "Inicio",
             "current_path": "/",
             "latest_notes": all_notes[:latest_notes_limit],
+            "total_notes_count": total_notes,
             "links_preview": links_preview,
             "latest_notes_title": latest_notes_title,
             "latest_notes_subtitle": latest_notes_subtitle,
@@ -187,7 +189,17 @@ def main() -> None:
         },
     )
 
-    total_notes = len(all_notes)
+    render_template(
+        env,
+        "404.html",
+        output_dir / "404.html",
+        {
+            **base_context,
+            "page_title": "404",
+            "current_path": "",
+        },
+    )
+
     total_pages = max(1, (total_notes + notes_page_size - 1) // notes_page_size)
 
     for page in range(1, total_pages + 1):
@@ -227,6 +239,7 @@ def main() -> None:
                 "page_title": "Notas",
                 "current_path": current_path,
                 "notes": page_notes,
+                "notes_total": total_notes,
                 "pagination": pagination,
             },
         )

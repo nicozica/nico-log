@@ -142,7 +142,7 @@ def _day_label(value: Any, timezone_name: str) -> str:
 
 
 def _range_label(max_temp: Any, min_temp: Any) -> str:
-    return f"{round(float(max_temp))}° / {round(float(min_temp))}°"
+    return f"{round(float(min_temp))}° / {round(float(max_temp))}°"
 
 
 def _normalize_forecast_days(entries: list[dict[str, Any]], timezone_name: str) -> list[dict[str, Any]]:

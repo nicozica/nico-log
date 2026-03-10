@@ -26,6 +26,9 @@
       </article>
       {% endfor %}
     </div>
+    {% if total_notes_count > latest_notes|length %}
+    <p class="home-notes-more"><a href="/notes/">Ver más notas</a></p>
+    {% endif %}
   </div>
 
   <aside class="home-side" aria-label="Columna lateral">

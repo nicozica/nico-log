@@ -5,6 +5,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_DIR="$ROOT_DIR/.venv"
 
+if git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  PENDING_NOTES="$(git -C "$ROOT_DIR" status --porcelain -- content/notes 2>/dev/null || true)"
+  if [ -n "$PENDING_NOTES" ]; then
+    echo "WARNING: You have note files with local git changes:"
+    echo "$PENDING_NOTES"
+    echo "If these notes are not pushed to GitHub, autodeploy will not publish them."
+  fi
+fi
+
 if [ ! -x "$VENV_DIR/bin/pip" ] || [ ! -x "$VENV_DIR/bin/python" ]; then
   rm -rf "$VENV_DIR"
   if ! python3 -m venv "$VENV_DIR"; then
