@@ -39,6 +39,7 @@ def create_app(
         SECRET_KEY=os.environ.get("NICO_EDITOR_SECRET_KEY") or secrets.token_hex(32),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Strict",
+        SESSION_COOKIE_SECURE=not testing,
         TESTING=testing,
     )
     repository = ContentRepository(project_root or PROJECT_ROOT)

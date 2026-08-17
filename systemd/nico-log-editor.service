@@ -1,0 +1,35 @@
+[Unit]
+Description=Nico Log private editor
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=nico
+Group=nico
+WorkingDirectory=/srv/repos/personal/argensonix/nico.com.ar
+EnvironmentFile=/etc/nico-log/nico-log-editor.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/srv/repos/personal/argensonix/nico.com.ar/.venv/bin/gunicorn --bind 127.0.0.1:5001 --bind 172.18.0.1:5001 --workers 2 --worker-class sync --timeout 210 --graceful-timeout 30 --keep-alive 5 --max-requests 1000 --max-requests-jitter 50 --forwarded-allow-ips 127.0.0.1,172.18.0.0/16 --no-control-socket --access-logfile - --error-logfile - --capture-output editor.app:app
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=35s
+UMask=0002
+
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RemoveIPC=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/srv/repos/personal/argensonix/nico.com.ar/content/notes /srv/repos/personal/argensonix/nico.com.ar/content/drafts
+
+[Install]
+WantedBy=multi-user.target

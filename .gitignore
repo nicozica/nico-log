@@ -9,6 +9,9 @@ cache/*
 
 dist/*
 !dist/.gitkeep
+
+content/drafts/*.md
+!content/drafts/.gitkeep
 .venv/
 __pycache__/
 *.pyc

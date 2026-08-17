@@ -4,11 +4,13 @@ charset-normalizer==3.4.4
 click==8.4.2
 feedparser==6.0.12
 Flask==3.1.2
+gunicorn==26.0.0
 idna==3.11
 itsdangerous==2.2.0
 Jinja2==3.1.6
 Markdown==3.10.2
 MarkupSafe==3.0.3
+packaging==26.3
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 requests==2.32.5

@@ -121,6 +121,12 @@ class EditorAppTests(unittest.TestCase):
         self.assertEqual(favicon.status_code, 200)
         favicon.close()
 
+    def test_production_session_cookie_is_secure(self) -> None:
+        production_app = create_app(self.root, publisher=self.publisher)
+        self.assertTrue(production_app.config["SESSION_COOKIE_SECURE"])
+        self.assertTrue(production_app.config["SESSION_COOKIE_HTTPONLY"])
+        self.assertEqual(production_app.config["SESSION_COOKIE_SAMESITE"], "Strict")
+
     def test_state_changing_routes_require_csrf(self) -> None:
         with self.client.session_transaction() as session:
             session.pop("_csrf_token", None)
