@@ -1,11 +1,11 @@
 ---
-title: "Pacer: de las capturas eternas a un brief limpio para Coachat"
+title: "Pacer: de las capturas eternas a un brief limpio para ChatGPT"
 date: 2026-03-09
 tags: ["pacer", "strava", "running", "raspberry-pi", "nodejs", "automation", "argensonix-labs"]
 summary: "Armé Pacer, una app local que trae mis actividades desde Strava, resume la carga reciente y me deja generar un brief simple para pasarle a ChatGPT sin depender de capturas ni textos larguísimos."
 ---
 
-Hoy nació **Pacer**, una mini app local pensada para algo bastante concreto: **dejar de pasarle al ChatGPT capturas y empezar a pasarle contexto útil**.
+Hoy nació **Pacer**, una mini app pensada para algo bastante concreto: **dejar de pasarle capturas de pantalla al ChatGPT y empezar a darle contexto útil**.
 
 La idea salió de una necesidad muy simple. Cuando quiero revisar cómo vengo entrenando y decidir qué hacer al día siguiente, no necesito nueve screenshots, ni una novela explicando todo, ni depender de recordar de memoria qué hice hace tres días.
 
@@ -40,13 +40,13 @@ Lo interesante fue que al intentar automatizarlo aparecieron varias verdades bas
 
 ### Qué terminó siendo Pacer
 
-Pacer quedó como una herramienta local, simple y bastante más sensata:
+Pacer quedó como una herramienta simple y bastante más sensata:
 
 - trae mis últimas actividades desde **Strava API**
 - guarda todo en JSON
-- levanta una mini web local
+- levanta una mini web
 - resume automáticamente la carga reciente
-- me deja completar solo unos pocos campos humanos
+- me deja completar solo unos pocos campos manualmente
 - genera un texto listo para copiar o descargar
 
 Ese texto después se lo paso a ChatGPT y el ida y vuelta queda mucho más limpio.
@@ -67,10 +67,7 @@ Y además tiene un bloque manual bien corto para completar:
 
 - sensación general
 - piernas
-- molestias
 - sueño
-- tiempo disponible mañana
-- objetivo
 - nota extra
 
 Eso solo ya baja muchísimo la fricción.
@@ -79,20 +76,12 @@ Eso solo ya baja muchísimo la fricción.
 
 El punto no era hacer una app “fitness” más.
 
-El punto era armar **un puente entre mis datos y una conversación útil**.
-
-No me interesa llenar dashboards por llenarlos.  
-Me interesa que el sistema me ayude a responder algo concreto:
+El punto era armar **un puente entre mis datos y una conversación útil**, que el sistema me ayude a responder algo concreto:
 
 **qué conviene hacer mañana.**
 
 En ese sentido, Pacer ya cumple.
 
-### Dónde corre
-
-Por ahora quedó corriendo en una **Raspberry Pi 5**, dentro de mi red local, con una mini web accesible desde otros dispositivos.
-
-La idea de llevarlo más adelante a una máquina todavía más chica sigue viva, pero primero quería validarlo sin agregar limitaciones innecesarias.
 
 ### Lo que salió bien
 
@@ -100,31 +89,17 @@ Varias cosas terminaron acomodándose mejor de lo esperado:
 
 - el fetch a Strava funciona
 - el JSON quedó útil
-- la web local nació rápido
 - el copy to clipboard / download txt tienen mucho más sentido del que parecía
-- ya no dependo de un caos de screenshots
+- ya no dependo de los screenshots
 
-También quedó repo nuevo en GitHub, con un nombre bastante lógico para la idea: **pacer**.
-
-### Lo que quedó afuera
-
-Hubo una tentación fuerte de meter browser automation por todos lados, sobre todo para Garmin.
-
-Pero por ahora quedó afuera del corazón del proyecto.
-
-Y estuvo bien.
-
-A veces el mejor avance no es sumar más piezas, sino **recortar el alcance a tiempo**.
 
 ### Próximo paso
 
-Pulirlo sin volverlo barroco:
+Pulirlo sin volverlo complicado:
 
 - brief más compacto
 - persistencia local de los campos manuales
-- favicon mejor resuelto
-- service prolijo en la Raspberry
-- quizá acceso privado por Tailscale
+- flow de deploy más pulido
 
 Pero lo importante ya pasó.
 
