@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{% block title %}Editor{% endblock %} · nico://log</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}" />
+    <script defer src="{{ url_for('static', filename='editor.js') }}"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="{{ url_for('index') }}">nico://log <span>editor local</span></a>
+      <nav>
+        <a href="{{ url_for('index') }}">Notas</a>
+        <a class="button button-primary" href="{{ url_for('new_note') }}">Nueva nota</a>
+      </nav>
+    </header>
+    <main class="shell">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

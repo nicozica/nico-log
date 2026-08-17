@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Nueva nota{% endblock %}
+{% block content %}
+<section class="page-head page-head-editor">
+  <div>
+    <p class="eyebrow">Nuevo borrador</p>
+    <h1>Nueva nota</h1>
+    <p>Se creará únicamente bajo <code>content/drafts/</code>.</p>
+  </div>
+</section>
+{% set is_new = true %}
+{% include "_form.html" %}
+{% endblock %}

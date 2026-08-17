@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Notas{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Filesystem editorial</p>
+    <h1>Notas</h1>
+    <p>Las ediciones se guardan exclusivamente como borradores privados.</p>
+  </div>
+  <form class="search" method="get">
+    <label for="q">Buscar</label>
+    <div class="search-row">
+      <input id="q" name="q" value="{{ query }}" placeholder="Título, tag o filename" />
+      <button class="button" type="submit">Filtrar</button>
+    </div>
+  </form>
+</section>
+
+<section class="note-section">
+  <div class="section-title">
+    <h2>Publicadas</h2>
+    <span>{{ published|length }}</span>
+  </div>
+  <div class="note-list">
+    {% for note in published %}
+    <article class="note-row">
+      <div class="note-copy">
+        <div class="note-heading">
+          <h3>{{ note.title }}</h3>
+          {% if note.has_draft %}<span class="badge badge-draft">Borrador privado</span>{% endif %}
+          {% if note.validation_error %}<span class="badge badge-error">Metadata inválida</span>{% endif %}
+        </div>
+        <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
+        {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
+      </div>
+      <a class="button" href="{{ url_for('edit_note', filename=note.filename) }}">Editar</a>
+    </article>
+    {% else %}
+    <p class="empty">No hay notas publicadas para este filtro.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="note-section">
+  <div class="section-title">
+    <h2>Borradores</h2>
+    <span>{{ drafts|length }}</span>
+  </div>
+  <div class="note-list">
+    {% for note in drafts %}
+    <article class="note-row">
+      <div class="note-copy">
+        <div class="note-heading">
+          <h3>{{ note.title }}</h3>
+          <span class="badge badge-draft">{{ "Edita publicada" if note.published_exists else "Nueva" }}</span>
+          {% if note.validation_error %}<span class="badge badge-error">Metadata inválida</span>{% endif %}
+        </div>
+        <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
+        {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
+      </div>
+      <a class="button" href="{{ url_for('edit_note', filename=note.filename) }}">Abrir</a>
+    </article>
+    {% else %}
+    <p class="empty">No hay borradores privados.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

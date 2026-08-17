@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Error{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">No se pudo continuar</p>
+    <h1>{{ message }}</h1>
+    <p><a class="button" href="{{ url_for('index') }}">Volver a notas</a></p>
+  </div>
+</section>
+{% endblock %}

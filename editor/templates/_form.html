@@ -1,0 +1,39 @@
+{% if error %}<div class="notice notice-error" role="alert">{{ error }}</div>{% endif %}
+<form class="editor-form" method="post" {% if is_new %}data-new-note{% endif %}>
+  {% if not is_new %}<input type="hidden" name="revision" value="{{ revision_value }}" />{% endif %}
+  <div class="field field-wide">
+    <label for="title">Título</label>
+    <input id="title" name="title" value="{{ form.title }}" maxlength="200" required />
+  </div>
+  <div class="field-grid">
+    <div class="field">
+      <label for="date">Fecha ISO</label>
+      <input id="date" name="date" value="{{ form.date }}" required />
+    </div>
+    <div class="field">
+      <label for="slug">Slug</label>
+      <input id="slug" name="slug" value="{{ form.slug }}" maxlength="120" />
+      {% if not is_new %}<small>El filename no cambia al guardar el borrador.</small>{% endif %}
+    </div>
+  </div>
+  <div class="field field-wide">
+    <label for="tags">Tags</label>
+    <input id="tags" name="tags" value="{{ form.tags }}" placeholder="infra, python, low-tech" />
+    <small>Separados por comas.</small>
+  </div>
+  <div class="field field-wide">
+    <label for="summary">Resumen</label>
+    <textarea id="summary" name="summary" rows="3" maxlength="1000">{{ form.summary }}</textarea>
+  </div>
+  <div class="field field-wide">
+    <div class="label-row">
+      <label for="body">Markdown</label>
+      <span data-body-count></span>
+    </div>
+    <textarea id="body" class="markdown-editor" name="body" rows="24">{{ form.body }}</textarea>
+  </div>
+  <div class="form-actions">
+    <button class="button button-primary" type="submit">Guardar borrador</button>
+    <a class="button button-quiet" href="{{ url_for('index') }}">Volver</a>
+  </div>
+</form>

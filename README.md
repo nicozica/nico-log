@@ -43,6 +43,22 @@ Bootstrap or refresh the virtualenv explicitly:
 
 Builds do not install or upgrade dependencies automatically.
 
+## Local editor
+
+The Phase 1 editor lists published notes and manages private working copies under `content/drafts/`. It never publishes or writes to `content/notes/`.
+
+Run it on Pipa only:
+
+```bash
+.venv/bin/python -m editor.app
+```
+
+Open `http://127.0.0.1:5001/`. To test explicitly from the trusted LAN, use Flask's `--host 0.0.0.0` option; do not expose this unauthenticated development server through a tunnel.
+
+```bash
+.venv/bin/flask --app editor.app run --host 0.0.0.0 --port 5001
+```
+
 ## Local build (Pipa)
 
 ```bash
@@ -71,7 +87,7 @@ Rebuild after editing.
 
 `content/notes/*.md` is published source. `content/drafts/*.md` contains private working copies and is not read by the public generator.
 
-A future editor will use the same filename for a published note and its draft. Saving will only update the draft; explicit publication will validate it and atomically replace the corresponding file under `content/notes/`.
+The local editor uses the same filename for a published note and its draft. Saving only updates the draft; a later phase will add explicit publication that validates it and atomically replaces the corresponding file under `content/notes/`.
 
 ## Deploy to Pizero
 
