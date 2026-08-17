@@ -1,5 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Editar {{ note.filename }}{% endblock %}
+{% block title %}{{ note.metadata.get("title", note.filename) }}{% endblock %}
+{% block editor_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor-dark.css') }}" />
+{% endblock %}
+{% block editor_scripts %}
+<script defer src="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor-all.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/es-es.js') }}"></script>
+{% endblock %}
 {% block content %}
 <section class="page-head page-head-editor">
   <div>
@@ -8,13 +16,11 @@
   </div>
   {% if note.source_kind == "draft" %}
   <div class="source-state source-draft">
-    <strong>Borrador privado</strong>
-    <span>Estás editando la copia de trabajo existente.</span>
+    <strong>Borrador</strong>
   </div>
   {% else %}
   <div class="source-state">
-    <strong>Fuente publicada</strong>
-    <span>Guardar creará un borrador; la versión pública no cambiará.</span>
+    <strong>Publicada</strong>
   </div>
   {% endif %}
 </section>

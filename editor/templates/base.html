@@ -1,20 +1,32 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="editorial">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>{% block title %}Editor{% endblock %} · nico://log</title>
+    <meta name="theme-color" content="#14231d" />
+    <title>Editor · {% block title %}Notas{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('favicon_svg') }}" type="image/svg+xml" />
+    <link rel="shortcut icon" href="{{ url_for('favicon_ico') }}" />
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}" />
+    {% block editor_styles %}{% endblock %}
+    {% block editor_scripts %}{% endblock %}
     <script defer src="{{ url_for('static', filename='editor.js') }}"></script>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="{{ url_for('index') }}">nico://log <span>editor local</span></a>
-      <nav>
-        <a href="{{ url_for('index') }}">Notas</a>
-        <a class="button button-primary" href="{{ url_for('new_note') }}">Nueva nota</a>
-      </nav>
+      <div class="topbar-inner">
+        <a class="brand" href="{{ url_for('index') }}">nico://log <span>Editor</span></a>
+        <nav aria-label="Navegación del editor">
+          <a href="{{ url_for('index') }}">Notas</a>
+          <a class="button button-primary" href="{{ url_for('new_note') }}">Nueva nota</a>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Cambiar a modo oscuro">
+            <span aria-hidden="true" data-theme-icon>☾</span>
+            <span data-theme-label>Oscuro</span>
+          </button>
+        </nav>
+      </div>
     </header>
     <main class="shell">
       {% block content %}{% endblock %}

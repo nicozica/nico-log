@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Resultado de publicación{% endblock %}
+{% block content %}
+<section class="result-panel {{ 'result-success' if result.success else 'result-failure' }}">
+  <p class="eyebrow">Publicación</p>
+  <h1>{{ "Publicación completada" if result.success else "El sitio no se pudo actualizar" }}</h1>
+  <p>{{ result.message }}</p>
+  {% if source_written %}<p>La versión publicada quedó preservada. La actualización puede reintentarse sin volver a modificarla.</p>{% endif %}
+  <div class="form-actions">
+    {% if result.success %}
+    <a class="button button-primary" href="{{ public_url }}" target="_blank" rel="noopener">Ver nota pública</a>
+    {% else %}
+    <form method="post" action="{{ url_for('retry_deploy', filename=filename) }}" data-publish-form>
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}" />
+      <button class="button button-publish" type="submit" data-publish-button>Reintentar actualización</button>
+    </form>
+    {% endif %}
+    <a class="button" href="{{ url_for('index') }}">Volver a notas</a>
+  </div>
+  <p class="publishing-status" data-publishing-status hidden>Actualizando el sitio…</p>
+</section>
+{% endblock %}

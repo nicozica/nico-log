@@ -146,6 +146,17 @@ def _rewrite_external_links(html_text: str, site_domain: str) -> str:
     return parser.rewritten_html()
 
 
+def render_markdown(
+    body: str,
+    site_domain: str = "",
+    renderer: markdown.Markdown | None = None,
+) -> str:
+    """Render note Markdown using the public site's exact extensions and link policy."""
+    active_renderer = renderer or markdown.Markdown(extensions=["extra", "sane_lists"])
+    active_renderer.reset()
+    return _rewrite_external_links(active_renderer.convert(body), site_domain)
+
+
 def load_notes(notes_dir: Path, site_domain: str = "") -> list[dict[str, Any]]:
     renderer = markdown.Markdown(extensions=["extra", "sane_lists"])
     notes: list[dict[str, Any]] = []
@@ -162,9 +173,7 @@ def load_notes(notes_dir: Path, site_domain: str = "") -> list[dict[str, Any]]:
             raw_tags = []
         tags = [str(tag) for tag in raw_tags]
 
-        # Reset parser state between files.
-        renderer.reset()
-        rendered_html = _rewrite_external_links(renderer.convert(body), site_domain)
+        rendered_html = render_markdown(body, site_domain, renderer)
         excerpt_html = utils.excerpt_html_from_rendered_html(rendered_html)
 
         notes.append(

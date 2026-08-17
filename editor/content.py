@@ -54,6 +54,10 @@ class RevisionConflict(ContentError):
     pass
 
 
+class DraftCleanupError(ContentError):
+    pass
+
+
 @dataclass(frozen=True)
 class ParsedDocument:
     metadata: dict[str, Any]
@@ -80,6 +84,7 @@ class EditableNote:
     body: str
     source_kind: str
     revision: str
+    published_revision: str
     published_exists: bool
 
     def form_values(self) -> dict[str, str]:
@@ -253,8 +258,15 @@ class ContentRepository:
             body=document.body,
             source_kind=source_kind,
             revision=self._revision(source_kind, raw),
+            published_revision=self._published_revision(published_path),
             published_exists=published_path.exists(),
         )
+
+    def _published_revision(self, published_path: Path) -> str:
+        if not published_path.exists():
+            return "published:none"
+        raw = self._read_bytes(published_path)
+        return self._revision("published", raw)
 
     def _validated_fields(
         self,
@@ -334,21 +346,30 @@ class ContentRepository:
             if existing_slug == slug:
                 raise CollisionError(f"El slug ya está usado por {filename}.")
 
-    def _atomic_write(self, target: Path, content: str) -> None:
+    def _atomic_write(self, target: Path, content: bytes, *, replace: bool) -> None:
+        if target.parent not in {self.notes_dir, self.drafts_dir}:
+            raise InvalidFilename("El destino queda fuera de los directorios permitidos.")
         descriptor, temporary_name = tempfile.mkstemp(
             prefix=f".{target.name}.",
             suffix=".tmp",
-            dir=self.drafts_dir,
+            dir=target.parent,
         )
         temporary_path = Path(temporary_name)
         try:
             os.fchmod(descriptor, 0o664)
-            with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+            with os.fdopen(descriptor, "wb") as handle:
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(temporary_path, target)
-            directory_fd = os.open(self.drafts_dir, os.O_RDONLY)
+            if replace:
+                os.replace(temporary_path, target)
+            else:
+                try:
+                    os.link(temporary_path, target)
+                except FileExistsError as exc:
+                    raise CollisionError("El archivo de destino apareció durante la operación.") from exc
+                temporary_path.unlink()
+            directory_fd = os.open(target.parent, os.O_RDONLY)
             try:
                 os.fsync(directory_fd)
             finally:
@@ -377,7 +398,8 @@ class ContentRepository:
                 raise CollisionError("Ya existe una nota o borrador con ese nombre.")
             metadata, body, _ = self._validated_fields(payload, filename, {})
             self._ensure_unique_slug(normalized_slug, filename)
-            self._atomic_write(draft_path, serialize_document(metadata, body))
+            serialized = serialize_document(metadata, body).encode("utf-8")
+            self._atomic_write(draft_path, serialized, replace=False)
         return self.load_for_edit(filename)
 
     def save_draft(
@@ -415,6 +437,146 @@ class ContentRepository:
             metadata, body, _ = self._validated_fields(payload, filename, document.metadata)
             effective_slug = str(metadata.get("slug") or slug_from_filename(filename))
             self._ensure_unique_slug(effective_slug, filename)
-            self._atomic_write(draft_path, serialize_document(metadata, body))
+            serialized = serialize_document(metadata, body).encode("utf-8")
+            self._atomic_write(draft_path, serialized, replace=True)
 
         return self.load_for_edit(filename)
+
+    @staticmethod
+    def _validate_revision_token(revision: str, expected_kind: str) -> str:
+        try:
+            source_kind, expected_digest = revision.split(":", 1)
+        except ValueError as exc:
+            raise RevisionConflict("La revisión enviada no es válida.") from exc
+        if source_kind != expected_kind or not re.fullmatch(r"[0-9a-f]{64}", expected_digest):
+            raise RevisionConflict("La revisión enviada no es válida.")
+        return expected_digest
+
+    def _validate_published_revision(self, published_path: Path, revision: str) -> bool:
+        if revision == "published:none":
+            if published_path.exists():
+                raise RevisionConflict("Apareció una nota publicada con ese nombre. Recargá la página.")
+            return False
+        expected_digest = self._validate_revision_token(revision, "published")
+        if not published_path.exists():
+            raise RevisionConflict("La nota publicada cambió o dejó de existir. Recargá la página.")
+        current_digest = hashlib.sha256(self._read_bytes(published_path)).hexdigest()
+        if not hmac.compare_digest(current_digest, expected_digest):
+            raise RevisionConflict("La fuente publicada cambió desde que abriste el borrador.")
+        return True
+
+    def _strict_publication_metadata(self, filename: str, raw: bytes) -> tuple[ParsedDocument, str]:
+        try:
+            date.fromisoformat(filename[:10])
+        except ValueError as exc:
+            raise ValidationError("La fecha incluida en el filename no es válida.") from exc
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError("El borrador no está codificado como UTF-8.") from exc
+        if not FRONT_MATTER_PATTERN.match(text):
+            raise ValidationError("Publicar requiere frontmatter YAML delimitado por ---.")
+        document = parse_document(text)
+        metadata = document.metadata
+
+        title = metadata.get("title")
+        if not isinstance(title, str) or not title.strip() or len(title.strip()) > MAX_TITLE_LENGTH:
+            raise ValidationError("El título publicado debe ser un string válido.")
+
+        date_value = metadata.get("date")
+        if isinstance(date_value, (date, datetime)):
+            pass
+        elif isinstance(date_value, str):
+            try:
+                date_parser.isoparse(date_value)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValidationError("La fecha publicada debe usar un formato ISO válido.") from exc
+        else:
+            raise ValidationError("La fecha publicada es obligatoria.")
+
+        tags = metadata.get("tags")
+        if not isinstance(tags, list) or any(not isinstance(tag, str) for tag in tags):
+            raise ValidationError("Los tags publicados deben ser una lista de strings.")
+        if len(tags) > MAX_TAGS or any(not tag.strip() or len(tag) > MAX_TAG_LENGTH for tag in tags):
+            raise ValidationError("La lista de tags publicada no es válida.")
+
+        if "summary" in metadata and not isinstance(metadata["summary"], str):
+            raise ValidationError("El resumen publicado debe ser un string.")
+        if isinstance(metadata.get("summary"), str) and len(metadata["summary"]) > MAX_SUMMARY_LENGTH:
+            raise ValidationError("El resumen publicado es demasiado largo.")
+
+        raw_slug = metadata.get("slug", slug_from_filename(filename))
+        if not isinstance(raw_slug, str):
+            raise ValidationError("El slug publicado debe ser un string.")
+        effective_slug = raw_slug.strip()
+        if (
+            not effective_slug
+            or len(effective_slug) > MAX_SLUG_LENGTH
+            or not SLUG_PATTERN.fullmatch(effective_slug)
+            or slugify(effective_slug) != effective_slug
+        ):
+            raise ValidationError("El slug publicado no es válido.")
+        return document, effective_slug
+
+    def _ensure_unique_published_slug(self, slug: str, exclude_filename: str) -> None:
+        for path in self.notes_dir.glob("*.md"):
+            if path.name == exclude_filename or path.is_symlink() or not path.is_file():
+                continue
+            try:
+                raw = self._read_bytes(path)
+                _, existing_slug = self._strict_publication_metadata(path.name, raw)
+            except ContentError:
+                existing_slug = slug_from_filename(path.name)
+            if existing_slug == slug:
+                raise CollisionError(f"El slug ya está publicado por {path.name}.")
+
+    def published_slug(self, filename: str) -> str:
+        published_path = self._path(self.notes_dir, filename)
+        if not published_path.exists():
+            raise NoteNotFound("La nota publicada no existe.")
+        raw = self._read_bytes(published_path)
+        _, slug = self._strict_publication_metadata(filename, raw)
+        return slug
+
+    def publish_draft(
+        self,
+        filename: str,
+        draft_revision: str,
+        published_revision: str,
+    ) -> str:
+        draft_path = self._path(self.drafts_dir, filename)
+        published_path = self._path(self.notes_dir, filename)
+        expected_draft_digest = self._validate_revision_token(draft_revision, "draft")
+
+        with self._write_lock:
+            if not draft_path.exists():
+                raise RevisionConflict("El borrador cambió o dejó de existir.")
+            raw = self._read_bytes(draft_path)
+            current_draft_digest = hashlib.sha256(raw).hexdigest()
+            if not hmac.compare_digest(current_draft_digest, expected_draft_digest):
+                raise RevisionConflict("El borrador cambió desde que lo abriste. Recargá la página.")
+
+            replace_existing = self._validate_published_revision(published_path, published_revision)
+            _, effective_slug = self._strict_publication_metadata(filename, raw)
+            self._ensure_unique_published_slug(effective_slug, filename)
+            self._atomic_write(published_path, raw, replace=replace_existing)
+
+            try:
+                current_raw = self._read_bytes(draft_path)
+                if not hmac.compare_digest(hashlib.sha256(current_raw).hexdigest(), expected_draft_digest):
+                    raise DraftCleanupError(
+                        "La fuente se publicó, pero el borrador volvió a cambiar y fue preservado."
+                    )
+                draft_path.unlink()
+                directory_fd = os.open(self.drafts_dir, os.O_RDONLY)
+                try:
+                    os.fsync(directory_fd)
+                finally:
+                    os.close(directory_fd)
+            except DraftCleanupError:
+                raise
+            except (OSError, ContentError) as exc:
+                raise DraftCleanupError(
+                    "La fuente publicada se escribió, pero no se pudo retirar el borrador."
+                ) from exc
+        return effective_slug

@@ -45,7 +45,7 @@ Builds do not install or upgrade dependencies automatically.
 
 ## Local editor
 
-The Phase 1 editor lists published notes and manages private working copies under `content/drafts/`. It never publishes or writes to `content/notes/`.
+The local editor lists published notes and manages private working copies under `content/drafts/`. Saving remains private. Preview uses the public generator's Markdown renderer inside a sandboxed iframe. Publishing strictly validates the draft, atomically writes `content/notes/`, removes the draft only after that write, and then starts the canonical `nico-log-build.service`.
 
 Run it on Pipa only:
 
@@ -58,6 +58,31 @@ Open `http://127.0.0.1:5001/`. To test explicitly from the trusted LAN, use Flas
 ```bash
 .venv/bin/flask --app editor.app run --host 0.0.0.0 --port 5001
 ```
+
+For a stable session/CSRF signing key, set `NICO_EDITOR_SECRET_KEY` in the editor process environment. Do not commit that value.
+
+The editor never runs build or rsync commands itself. It may start only the existing publication unit using the exact command below:
+
+```text
+/usr/bin/sudo -n /usr/bin/systemctl start nico-log-build.service
+```
+
+The reviewed least-privilege sudoers rule is in `sudoers/nico-log-editor`. It is not installed automatically. Validate and install it manually:
+
+```bash
+cd /srv/repos/personal/argensonix/nico.com.ar
+sudo /usr/sbin/visudo -cf sudoers/nico-log-editor
+sudo install -o root -g root -m 0440 sudoers/nico-log-editor /etc/sudoers.d/nico-log-editor
+sudo /usr/sbin/visudo -cf /etc/sudoers.d/nico-log-editor
+```
+
+The future production editor service should run as `nico`, matching current repository ownership. The rule grants that account only the exact `systemctl start nico-log-build.service` invocation; it does not grant arbitrary units, arguments, commands, shells, journal access, or environment access.
+
+### Visual Markdown editor
+
+The note body uses the plain-JavaScript TOAST UI Editor `3.2.2`, vendored under `editor/static/vendor/toastui-editor-3.2.2/`. Its version, upstream source, checksums context, and MIT license are kept with the vendored assets. There is no runtime CDN dependency or frontend build step.
+
+Visual mode is the default only when loading and immediately exporting the body produces the same normalized Markdown. If TOAST UI would rewrite the source, the editor automatically stays in Markdown mode and explains why. The original textarea remains the form source and the existing draft, CSRF, preview, validation, and publication paths are unchanged.
 
 ## Local build (Pipa)
 
@@ -87,7 +112,7 @@ Rebuild after editing.
 
 `content/notes/*.md` is published source. `content/drafts/*.md` contains private working copies and is not read by the public generator.
 
-The local editor uses the same filename for a published note and its draft. Saving only updates the draft; a later phase will add explicit publication that validates it and atomically replaces the corresponding file under `content/notes/`.
+The local editor uses the same filename for a published note and its draft. Publishing checks both draft and published-source revisions to prevent overwriting concurrent manual changes. If build/deploy fails after the atomic source write, the published Markdown is retained and the editor offers a deploy-only retry.
 
 ## Deploy to Pizero
 

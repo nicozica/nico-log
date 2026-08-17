@@ -3,14 +3,11 @@
 {% block content %}
 <section class="page-head">
   <div>
-    <p class="eyebrow">Filesystem editorial</p>
     <h1>Notas</h1>
-    <p>Las ediciones se guardan exclusivamente como borradores privados.</p>
   </div>
   <form class="search" method="get">
-    <label for="q">Buscar</label>
     <div class="search-row">
-      <input id="q" name="q" value="{{ query }}" placeholder="Título, tag o filename" />
+      <input id="q" name="q" value="{{ query }}" placeholder="Filtrar por título, tag o archivo" aria-label="Filtrar notas" />
       <button class="button" type="submit">Filtrar</button>
     </div>
   </form>
@@ -23,18 +20,17 @@
   </div>
   <div class="note-list">
     {% for note in published %}
-    <article class="note-row">
+    <a class="note-row" href="{{ url_for('edit_note', filename=note.filename) }}" aria-label="Editar {{ note.title }}">
       <div class="note-copy">
         <div class="note-heading">
           <h3>{{ note.title }}</h3>
-          {% if note.has_draft %}<span class="badge badge-draft">Borrador privado</span>{% endif %}
-          {% if note.validation_error %}<span class="badge badge-error">Metadata inválida</span>{% endif %}
+          {% if note.has_draft %}<span class="badge badge-draft">Borrador</span>{% endif %}
+          {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
         <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
         {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
       </div>
-      <a class="button" href="{{ url_for('edit_note', filename=note.filename) }}">Editar</a>
-    </article>
+    </a>
     {% else %}
     <p class="empty">No hay notas publicadas para este filtro.</p>
     {% endfor %}
@@ -48,20 +44,19 @@
   </div>
   <div class="note-list">
     {% for note in drafts %}
-    <article class="note-row">
+    <a class="note-row" href="{{ url_for('edit_note', filename=note.filename) }}" aria-label="Abrir {{ note.title }}">
       <div class="note-copy">
         <div class="note-heading">
           <h3>{{ note.title }}</h3>
-          <span class="badge badge-draft">{{ "Edita publicada" if note.published_exists else "Nueva" }}</span>
-          {% if note.validation_error %}<span class="badge badge-error">Metadata inválida</span>{% endif %}
+          <span class="badge badge-draft">{{ "Cambios sin publicar" if note.published_exists else "Nueva" }}</span>
+          {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
         <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
         {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
       </div>
-      <a class="button" href="{{ url_for('edit_note', filename=note.filename) }}">Abrir</a>
-    </article>
+    </a>
     {% else %}
-    <p class="empty">No hay borradores privados.</p>
+    <p class="empty">No hay borradores.</p>
     {% endfor %}
   </div>
 </section>

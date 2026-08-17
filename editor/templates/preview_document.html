@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <base href="{{ public_site_url }}/" />
+    <title>VISTA PREVIA · {{ note.metadata.get("title", note.filename) }}</title>
+    <style>
+      body { margin: 0 auto; padding: 2rem; max-width: 760px; color: #17201d; font: 17px/1.65 system-ui, sans-serif; }
+      img { max-width: 100%; height: auto; } pre { overflow: auto; padding: 1rem; background: #f0f2f1; }
+      code { font-family: ui-monospace, monospace; } blockquote { margin-left: 0; padding-left: 1rem; border-left: 3px solid #176b4d; }
+      .preview-label { padding: .45rem .65rem; color: #704400; background: #fff0cf; font: 700 12px system-ui, sans-serif; letter-spacing: .08em; }
+    </style>
+  </head>
+  <body>
+    <div class="preview-label">VISTA PREVIA</div>
+    <article>{{ rendered_html|safe }}</article>
+  </body>
+</html>

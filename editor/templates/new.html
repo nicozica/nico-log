@@ -1,11 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Nueva nota{% endblock %}
+{% block editor_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor-dark.css') }}" />
+{% endblock %}
+{% block editor_scripts %}
+<script defer src="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor-all.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/es-es.js') }}"></script>
+{% endblock %}
 {% block content %}
 <section class="page-head page-head-editor">
   <div>
     <p class="eyebrow">Nuevo borrador</p>
     <h1>Nueva nota</h1>
-    <p>Se creará únicamente bajo <code>content/drafts/</code>.</p>
+    <p>La nota se guardará como borrador hasta que decidas publicarla.</p>
   </div>
 </section>
 {% set is_new = true %}

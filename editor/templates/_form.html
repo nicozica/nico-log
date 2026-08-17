@@ -1,25 +1,29 @@
 {% if error %}<div class="notice notice-error" role="alert">{{ error }}</div>{% endif %}
-<form class="editor-form" method="post" {% if is_new %}data-new-note{% endif %}>
-  {% if not is_new %}<input type="hidden" name="revision" value="{{ revision_value }}" />{% endif %}
+<form class="editor-form" method="post" action="{{ url_for('new_note') if is_new else url_for('edit_note', filename=note.filename) }}" data-editor-form {% if is_new %}data-new-note{% endif %}>
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}" />
+  {% if not is_new %}
+  <input type="hidden" name="revision" value="{{ revision_value }}" />
+  <input type="hidden" name="published_revision" value="{{ publish_published_revision|default(note.published_revision) }}" />
+  {% endif %}
   <div class="field field-wide">
     <label for="title">Título</label>
     <input id="title" name="title" value="{{ form.title }}" maxlength="200" required />
   </div>
   <div class="field-grid">
     <div class="field">
-      <label for="date">Fecha ISO</label>
+      <label for="date">Fecha</label>
       <input id="date" name="date" value="{{ form.date }}" required />
     </div>
     <div class="field">
-      <label for="slug">Slug</label>
+      <label for="slug">Dirección (slug)</label>
       <input id="slug" name="slug" value="{{ form.slug }}" maxlength="120" />
-      {% if not is_new %}<small>El filename no cambia al guardar el borrador.</small>{% endif %}
+      {% if not is_new %}<small>El nombre del archivo se mantiene al guardar.</small>{% endif %}
     </div>
   </div>
   <div class="field field-wide">
-    <label for="tags">Tags</label>
+    <label for="tags">Etiquetas</label>
     <input id="tags" name="tags" value="{{ form.tags }}" placeholder="infra, python, low-tech" />
-    <small>Separados por comas.</small>
+    <small>Separadas por comas.</small>
   </div>
   <div class="field field-wide">
     <label for="summary">Resumen</label>
@@ -27,13 +31,22 @@
   </div>
   <div class="field field-wide">
     <div class="label-row">
-      <label for="body">Markdown</label>
+      <label for="body">Contenido</label>
       <span data-body-count></span>
     </div>
-    <textarea id="body" class="markdown-editor" name="body" rows="24">{{ form.body }}</textarea>
+    <p class="editor-mode-note" data-editor-mode-note>El modo visual es el predeterminado. También podés cambiar a Markdown.</p>
+    <p class="notice notice-warning editor-compatibility-warning" data-editor-compatibility-warning hidden>
+      Esta nota usa Markdown que el modo visual modificaría. Para proteger el contenido, se abre solamente en modo Markdown.
+    </p>
+    <textarea id="body" class="markdown-editor" name="body" rows="24" data-markdown-source>{{ form.body }}</textarea>
+    <div class="wysiwyg-editor" data-wysiwyg-editor hidden></div>
   </div>
   <div class="form-actions">
-    <button class="button button-primary" type="submit">Guardar borrador</button>
+    <button class="button button-primary" type="submit" name="action" value="save">Guardar borrador</button>
+    <button class="button button-publish" type="submit" name="action" value="publish" data-publish-button>Publicar</button>
+    {% if not is_new and note.source_kind == "draft" %}
+    <a class="button" href="{{ url_for('preview_note', filename=note.filename) }}" target="_blank" rel="noopener">Vista previa</a>
+    {% endif %}
     <a class="button button-quiet" href="{{ url_for('index') }}">Volver</a>
   </div>
 </form>
