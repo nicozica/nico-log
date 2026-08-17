@@ -1,0 +1,13 @@
+[Unit]
+Description=Nico Log build and publish to Pizero
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=nico
+Group=nico
+WorkingDirectory=/srv/repos/personal/argensonix/nico.com.ar
+EnvironmentFile=/etc/nico-log/nico-log.env
+ExecStart=/srv/repos/personal/argensonix/nico.com.ar/scripts/publish.sh
+UMask=0022

@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy static output from Pipa to Pizero.
-# Pipa is the only build scheduler; Pizero only serves static files.
-REMOTE_HOST="${1:-pizero}"
+# Compatibility wrapper. All publications use scripts/publish.sh.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REMOTE_WWW="/srv/data/www/nico.com.ar"
 
-"$ROOT_DIR/scripts/dev-build.sh"
+if [ "$#" -gt 1 ] || { [ "$#" -eq 1 ] && [ "$1" != "pizero" ]; }; then
+  echo "Usage: $0 [pizero]" >&2
+  exit 2
+fi
 
-ssh "$REMOTE_HOST" "sudo mkdir -p '$REMOTE_WWW' && sudo chown -R \"\$(id -un):\$(id -gn)\" '$REMOTE_WWW' && sudo systemctl disable --now pizero-portal-generate.timer >/dev/null 2>&1 || true"
-
-rsync -az --delete "$ROOT_DIR/dist/" "$REMOTE_HOST:$REMOTE_WWW/"
-
-echo "Deploy complete to $REMOTE_HOST"
+exec "$ROOT_DIR/scripts/publish.sh"

@@ -6,13 +6,16 @@ Static indie portal generated with Python, designed for a Raspberry Pi workflow:
 
 ## Architecture
 
-- `content/`: notes + config + feeds + tiny text + webring
+- `content/notes/`: published Markdown source
+- `content/drafts/`: private working copies, ignored by the public generator
+- `content/`: config + feeds + tiny text + webring
 - `templates/`: Jinja templates for homepage and sections
 - `static/`: CSS and minimal JS assets
 - `generator/`: Python static generator + data adapters
 - `cache/`: runtime cache for dynamic fetches (ignored in git)
 - `dist/`: generated static output (ignored in git)
 - `scripts/`: helper scripts (build, new note, deploy)
+- `systemd/`: reviewable service + timer definitions for Pipa
 - `nginx/`: server block snippet
 
 ## Resilience model
@@ -30,8 +33,15 @@ This keeps the portal available even during upstream failures.
 - `python3-venv` package available
 - Optional for deploy: `rsync`, `ssh`, `sudo` on target host
 
-Python deps are in `requirements.txt`:
-`requests`, `pyyaml`, `feedparser`, `markdown`, `jinja2`, `python-dateutil`.
+Python dependencies and their transitive versions are pinned in `requirements.txt`.
+
+Bootstrap or refresh the virtualenv explicitly:
+
+```bash
+./scripts/bootstrap.sh
+```
+
+Builds do not install or upgrade dependencies automatically.
 
 ## Local build (Pipa)
 
@@ -57,21 +67,32 @@ This creates `content/notes/YYYY-MM-DD-slug.md` with front matter:
 
 Rebuild after editing.
 
+## Drafts
+
+`content/notes/*.md` is published source. `content/drafts/*.md` contains private working copies and is not read by the public generator.
+
+A future editor will use the same filename for a published note and its draft. Saving will only update the draft; explicit publication will validate it and atomically replace the corresponding file under `content/notes/`.
+
 ## Deploy to Pizero
 
 ```bash
-./scripts/deploy-pizero.sh pizero
+./scripts/publish.sh
 ```
 
-What it does:
-1. Runs local build on Pipa.
-2. Ensures `/srv/data/www/nico.com.ar` exists on Pizero.
-3. Disables legacy `pizero-portal-generate.timer` if present.
-4. Rsyncs `dist/` to `/srv/data/www/nico.com.ar/`.
+This is the canonical publication command. One lock covers the complete operation:
+
+```text
+Markdown source -> generator -> dist -> rsync -> Pizero
+```
+
+Concurrent publication attempts fail without starting a second build. `scripts/deploy-pizero.sh` remains as a compatibility wrapper.
 
 Scheduler model:
 - Build timer runs only on Pipa (`nico-log-build.timer`).
+- The timer invokes `scripts/publish.sh` through `nico-log-build.service`.
 - Pizero only serves static files via NGINX.
+
+Repository unit files live under `systemd/`. The service reads runtime secrets from `/etc/nico-log/nico-log.env`; that file must remain outside Git and be owned by `root:root` with mode `0600`.
 
 ## NGINX
 
@@ -111,10 +132,36 @@ Use `nginx/nico.com.ar.conf` as a base snippet:
 - `dist/notes/feed.json`
 - `dist/assets/...`
 
+## Image policy
+
+Keep image handling simple and consistent:
+
+- `SVG` for icons, logos, and simple illustrations.
+- `WEBP` for photos and note images.
+- `PNG` only when transparency/compatibility matters, such as social preview cards.
+- `ICO` only for legacy favicon support.
+
+Current examples in this repo:
+- `static/img/about/*.webp` and `static/img/notes/*.webp`: photos/content images
+- `static/img/*.svg` and `static/favicon.svg`: vector assets
+- `static/img/logo_nicolog.png`: social preview image
+- `static/favicon.ico`: fallback favicon
+
+Convert a source image for the site with:
+
+```bash
+convert input.jpg -auto-orient -strip -resize '1600x1600>' -quality 82 output.webp
+```
+
+Then reference it from templates/notes as `/assets/...` and rebuild.
+
+If you replace an existing image under `/assets/`, prefer a new filename instead of overwriting the old one.
+Those files are served with long-lived immutable caching, so changing contents without changing the URL can leave browsers/CDNs showing the previous version.
+
 ## Troubleshooting
 
 - Build fails with missing venv module:
-  - install system package: `python3-venv`
+  - install `python3-venv` if necessary, then run `./scripts/bootstrap.sh`
 - Build renders only fallback feed/weather:
   - expected when network is unavailable; check `cache/*.json` after successful run
 - Status shows `unknown` services:
