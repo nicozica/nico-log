@@ -115,8 +115,9 @@ button:focus-visible {
   margin: var(--space-1) 0 0;
   color: var(--muted);
   opacity: 0.78;
-  font-size: 0.92rem;
-  letter-spacing: 0.01em;
+  font-size: 0.89rem;
+  letter-spacing: 0;
+  line-height: 1.25;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
 
@@ -141,6 +142,9 @@ button:focus-visible {
 
 .theme-toggle {
   justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
   font-family: "Courier New", Courier, monospace;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -148,6 +152,20 @@ button:focus-visible {
   border-radius: 999px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
+}
+
+.theme-toggle__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  font-size: 0.82rem;
+  line-height: 1;
+  opacity: 0.82;
+}
+
+.theme-toggle__label {
+  line-height: 1;
 }
 
 .status-bar {
@@ -631,6 +649,26 @@ button.copy-btn {
 .note-body p,
 .prose p {
   max-width: 70ch;
+}
+
+.note-photo {
+  margin: var(--space-3) 0;
+  max-width: 70ch;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.note-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.note-photo figcaption {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 .note-card strong,

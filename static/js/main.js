@@ -3,6 +3,8 @@
 
   const root = document.documentElement;
   const toggleButton = document.getElementById("theme-toggle");
+  const toggleButtonIcon = toggleButton ? toggleButton.querySelector(".theme-toggle__icon") : null;
+  const toggleButtonLabel = toggleButton ? toggleButton.querySelector(".theme-toggle__label") : null;
   const COVER_FALLBACK_SRC = "/assets/img/blurfm-cover-default.svg";
   const NOW_UNAVAILABLE_LABEL = "No disponible";
   const COVER_CACHE_PREFIX = "cover|";
@@ -24,7 +26,18 @@
 
     const terminalEnabled = theme === "terminal";
     toggleButton.setAttribute("aria-pressed", String(terminalEnabled));
-    toggleButton.textContent = terminalEnabled ? "Editorial" : "Terminal";
+    toggleButton.setAttribute(
+      "aria-label",
+      terminalEnabled ? "Cambiar a modo editorial" : "Cambiar a modo terminal"
+    );
+
+    if (toggleButtonIcon) {
+      toggleButtonIcon.textContent = terminalEnabled ? "☼" : "☾";
+    }
+
+    if (toggleButtonLabel) {
+      toggleButtonLabel.textContent = terminalEnabled ? "Editorial" : "Terminal";
+    }
   }
 
   function readTheme() {

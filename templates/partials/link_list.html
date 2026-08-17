@@ -6,5 +6,7 @@
         {{ link.source }}{% if link.published_label %} · {{ link.published_label }}{% endif %}
       </span>
     </li>
+  {% else %}
+    <li class="link-item empty-state">No hay noticias frescas por ahora.</li>
   {% endfor %}
 </ul>

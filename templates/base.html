@@ -6,6 +6,21 @@
     <meta name="theme-color" content="#0b0f0e" />
     <title>{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}</title>
     <meta name="description" content="{{ site.description }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}" />
+    <meta property="og:description" content="{{ site.description }}" />
+    <meta property="og:url" content="{{ site.domain.rstrip('/') }}{{ current_path }}" />
+    <meta property="og:site_name" content="{{ site.title }}" />
+    <meta property="og:image" content="{{ site.domain.rstrip('/') }}/assets/img/logo_nicolog.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="{{ site.title }}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}" />
+    <meta name="twitter:description" content="{{ site.description }}" />
+    <meta name="twitter:image" content="{{ site.domain.rstrip('/') }}/assets/img/logo_nicolog.png" />
+    <meta name="twitter:image:alt" content="{{ site.title }}" />
     <link rel="icon" href="/favicon-v2.svg" type="image/svg+xml" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="alternate" type="application/rss+xml" title="{{ site.title }} notas RSS" href="/notes/rss.xml" />
@@ -39,11 +54,12 @@
       <nav class="site-nav" aria-label="Navegación principal">
         <a href="/" {% if current_path == '/' %}aria-current="page"{% endif %}>Inicio</a>
         <a href="/notes/" {% if current_path.startswith('/notes/') %}aria-current="page"{% endif %}>Notas</a>
-        <a href="/links/" {% if current_path.startswith('/links/') %}aria-current="page"{% endif %}>Links</a>
+        <a href="/noticias/" {% if current_path.startswith('/noticias/') %}aria-current="page"{% endif %}>Noticias</a>
         <a href="/about/" {% if current_path.startswith('/about/') %}aria-current="page"{% endif %}>Acerca</a>
       </nav>
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Alternar modo terminal">
-        Terminal
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo terminal">
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+        <span class="theme-toggle__label">Terminal</span>
       </button>
     </header>
 

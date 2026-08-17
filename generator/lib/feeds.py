@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import html
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -124,21 +124,16 @@ def _fetch_feed(feed_name: str, feed_url: str, timeout_seconds: int = 6) -> list
 
 def _fallback_items(feed_list: list[dict[str, Any]]) -> dict[str, Any]:
     now = datetime.now(tz=timezone.utc)
-    links = []
-    for index, feed in enumerate(feed_list[:10], start=1):
-        links.append(
-            {
-                "title": f"Offline cached placeholder #{index}",
-                "url": feed.get("url", "https://example.com"),
-                "source": feed.get("name", "feed"),
-                "published": now.isoformat(),
-            }
-        )
-
-    return {"updated_at": now.isoformat(), "items": links}
+    return {"updated_at": now.isoformat(), "items": []}
 
 
-def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: int = 120) -> tuple[list[dict[str, Any]], str]:
+def fetch_links(
+    content_path: Path,
+    cache_dir: Path,
+    ttl_minutes: int,
+    limit: int = 120,
+    fresh_days: int = 14,
+) -> tuple[list[dict[str, Any]], str]:
     feeds_yaml = utils.load_yaml(content_path, default={})
     feed_list = list(feeds_yaml.get("feeds", []))
 
@@ -175,9 +170,14 @@ def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: in
         fallback=lambda: _fallback_items(feed_list),
     )
 
+    now = datetime.now(tz=timezone.utc)
+    cutoff = now - timedelta(days=max(1, fresh_days))
     items = []
-    for raw in payload.get("items", [])[:limit]:
+    for raw in payload.get("items", []):
         published = _safe_datetime(raw.get("published"))
+        if published is None or published < cutoff or published > now:
+            continue
+
         items.append(
             {
                 "title": html.unescape(str(raw.get("title", "(untitled)"))),
@@ -188,7 +188,11 @@ def fetch_links(content_path: Path, cache_dir: Path, ttl_minutes: int, limit: in
             }
         )
 
-    return items, source
+    items.sort(
+        key=lambda item: _safe_datetime(item.get("published")) or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True,
+    )
+    return items[:limit], source
 
 
 def select_preview_links(items: list[dict[str, Any]], limit: int = 6) -> list[dict[str, Any]]:

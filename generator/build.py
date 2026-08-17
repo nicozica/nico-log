@@ -64,6 +64,7 @@ def main() -> None:
     now_playing_settings = config.get("now_playing", {})
     home_settings = config.get("home", {})
     notes_settings = config.get("notes", {})
+    news_settings = config.get("news", {})
     tiny_lines = utils.load_lines(content_dir / "tiny.txt")
 
     if not isinstance(site, dict):
@@ -78,6 +79,8 @@ def main() -> None:
         home_settings = {}
     if not isinstance(notes_settings, dict):
         notes_settings = {}
+    if not isinstance(news_settings, dict):
+        news_settings = {}
 
     site_power = str(site.get("power", "")).strip()
     if not site_power:
@@ -107,6 +110,7 @@ def main() -> None:
         cache_dir=cache_dir,
         ttl_minutes=int(config.get("feeds_ttl_minutes", 30)),
         limit=120,
+        fresh_days=_to_positive_int(news_settings.get("fresh_days", 14), default=14),
     )
     links_preview = feeds.select_preview_links(all_links, limit=6)
     weather_data, weather_source = weather.fetch_weather(config, cache_dir)
@@ -260,12 +264,24 @@ def main() -> None:
     render_template(
         env,
         "links_index.html",
+        output_dir / "noticias" / "index.html",
+        {
+            **base_context,
+            "page_title": "Noticias",
+            "current_path": "/noticias/",
+            "links": all_links,
+        },
+    )
+
+    render_template(
+        env,
+        "redirect.html",
         output_dir / "links" / "index.html",
         {
             **base_context,
-            "page_title": "Links",
+            "page_title": "Noticias",
             "current_path": "/links/",
-            "links": all_links,
+            "redirect_url": "/noticias/",
         },
     )
 

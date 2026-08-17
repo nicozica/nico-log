@@ -1,8 +1,8 @@
 site:
   title: nico://log
   domain: https://www.nico.com.ar
-  tagline: Website corriendo en 32 bits y 512 MB de RAM
-  description: Portal low tech independiente, construido con archivos estáticos y datos en cache.
+  tagline: Corriendo en Alpine Linux con 512 MB de RAM
+  description: Notas cortas en español sobre lo que estoy armando, arreglando y aprendiendo.
   author: Nico
   city: Buenos Aires
   timezone: America/Argentina/Buenos_Aires
@@ -34,7 +34,7 @@ about:
   philosophy: |
     Este portal prioriza lo simple: primero estático, después dinámico solo cuando hace falta.
     Si una API externa falla, se reutiliza el último dato válido para mantener continuidad.
-  runtime: Raspberry Pi Zero 2 W + NGINX + Cloudflare Tunnel
+  runtime: Raspberry Pi Zero 2 W + Alpine Linux 64 bit + NGINX + Cloudflare Tunnel
   location: Nodo doméstico en Buenos Aires
 
 home:
@@ -44,6 +44,9 @@ home:
 
 notes:
   page_size: 10
+
+news:
+  fresh_days: 14
 
 weather:
   provider: weatherapi
