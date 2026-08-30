@@ -55,7 +55,7 @@ class GeneratorBuildTests(unittest.TestCase):
             self.assertIn('<html lang="es"', es_html)
             self.assertIn('href="https://www.nico.com.ar/es/cuando-una-herramienta-deja-de-ser-un-experimento/"', es_html)
             self.assertIn('hreflang="en"', es_html)
-            self.assertIn('Read in English', es_html)
+            self.assertIn('English version →', es_html)
             self.assertIn('Cuando una herramienta deja de ser un experimento', es_html)
 
             self.assertIn('<html lang="en"', en_html)

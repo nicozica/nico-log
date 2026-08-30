@@ -53,16 +53,27 @@
     <a class="skip-link" href="#content">{{ locale.skip_link }}</a>
     <header class="site-header">
       <div class="site-headline">
-        <h1 class="site-title"><a href="{{ locale.nav.home_path }}">{{ site.title }}</a></h1>
+        <h1 class="site-title"><a href="{{ locale.nav.home_path }}" aria-label="{{ locale.nav.home_label }}">{{ site.title }}</a></h1>
         {% if site.tagline %}
         <p class="site-subtitle">{{ site.tagline }}</p>
         {% endif %}
       </div>
       <nav class="site-nav" aria-label="Primary navigation">
-        <a href="{{ locale.nav.home_path }}" {% if current_path == locale.nav.home_path %}aria-current="page"{% endif %}>{{ locale.nav.home_label }}</a>
         <a href="{{ locale.nav.notes_path }}" {% if current_path.startswith(locale.nav.notes_path) %}aria-current="page"{% endif %}>{{ locale.nav.notes_label }}</a>
         <a href="{{ locale.nav.news_path }}" {% if current_path.startswith(locale.nav.news_path) %}aria-current="page"{% endif %}>{{ locale.nav.news_label }}</a>
         <a href="{{ locale.nav.about_path }}" {% if current_path.startswith(locale.nav.about_path) %}aria-current="page"{% endif %}>{{ locale.nav.about_label }}</a>
+        {% if alternate_languages %}
+        <span class="lang-switch" aria-label="Language">
+          {%- for alt in alternate_languages -%}
+            {%- if alt.hreflang == locale.code -%}
+              <span class="lang-switch__item lang-switch__item--active" aria-current="true">{{ alt.hreflang | upper }}</span>
+            {%- else -%}
+              <a class="lang-switch__item" href="{{ alt.href }}" hreflang="{{ alt.hreflang }}">{{ alt.hreflang | upper }}</a>
+            {%- endif -%}
+            {%- if not loop.last -%}<span class="lang-switch__sep" aria-hidden="true"> · </span>{%- endif -%}
+          {%- endfor -%}
+        </span>
+        {% endif %}
       </nav>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="{{ locale.theme_toggle_aria }}">
         <span class="theme-toggle__icon" aria-hidden="true">☾</span>

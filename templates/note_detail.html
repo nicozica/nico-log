@@ -5,12 +5,6 @@
   <header class="section-head">
     <h2 class="section-title">{{ note.title }}</h2>
     <p class="meta">{{ note.date_label }}</p>
-    {% if note.translation %}
-    <p class="meta"><a href="{{ note.translation.path }}" hreflang="{{ note.translation.language }}">{{ locale.note.translation_link }}</a></p>
-    {% endif %}
-    {% if note.original %}
-    <p class="meta">{{ locale.note.original_notice }} <a href="{{ note.original.path }}">{{ locale.note.original_link }}</a>.</p>
-    {% endif %}
     <p class="tags">
       {% for tag in note.tags %}
         <span class="pill">{{ tag }}</span>
@@ -21,6 +15,12 @@
   <div class="note-body">
     {{ note.html | safe }}
   </div>
+
+  {% if note.original %}
+  <p class="note-provenance">{{ locale.note.original_notice }} <a href="{{ note.original.path }}" hreflang="{{ note.original.language }}">{{ locale.note.original_link }}</a></p>
+  {% elif note.translation %}
+  <p class="note-provenance"><a href="{{ note.translation.path }}" hreflang="{{ note.translation.language }}">{{ locale.note.translation_link }}</a></p>
+  {% endif %}
 </article>
 
 <p><a href="{{ note.notes_index_path }}">{{ locale.note.back }}</a></p>

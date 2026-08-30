@@ -71,7 +71,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'empty': 'Todavía no hay notas publicadas en esta versión.',
         },
         'note': {
-            'translation_link': 'Read in English',
+            'translation_link': 'English version →',
             'original_notice': '',
             'original_link': '',
             'back': '← Volver a notas',
@@ -165,9 +165,9 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'empty': 'No English notes have been published yet.',
         },
         'note': {
-            'translation_link': 'Leer en español',
+            'translation_link': 'Versión en español →',
             'original_notice': 'Originally written in Spanish.',
-            'original_link': 'Read the Spanish original',
+            'original_link': 'Read the original →',
             'back': '← Back to notes',
         },
         'news': {

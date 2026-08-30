@@ -140,6 +140,34 @@ button:focus-visible {
   border-bottom-color: var(--accent);
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.lang-switch__item {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.lang-switch__item--active {
+  color: var(--text);
+  font-weight: 600;
+  opacity: 1;
+}
+
+.lang-switch__item:not(.lang-switch__item--active):hover {
+  color: var(--text);
+}
+
+.lang-switch__sep {
+  color: var(--border);
+}
+
 .theme-toggle {
   justify-self: start;
   display: inline-flex;
@@ -653,6 +681,22 @@ button.copy-btn {
 .prose ul,
 .prose ol {
   max-width: 70ch;
+}
+
+.note-provenance {
+  margin: var(--space-3) 0 var(--space-2);
+  max-width: 70ch;
+  font-size: 0.88rem;
+  color: var(--muted);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+.note-provenance a {
+  color: var(--muted);
+}
+
+.note-provenance a:hover {
+  color: var(--text);
 }
 
 .note-photo {
