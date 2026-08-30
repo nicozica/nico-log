@@ -142,7 +142,7 @@ input:focus, textarea:focus { border-color: var(--accent); }
 .note-row:last-child { border-bottom: 0; }
 .note-row:hover { background: var(--row-hover); }
 .note-row:focus-visible { position: relative; z-index: 1; outline-offset: -3px; background: var(--row-hover); }
-.note-copy { min-width: 0; }
+.note-copy { flex: 1; min-width: 0; }
 .note-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem; }
 .note-heading h3 { margin: 0; font-size: 1rem; }
 .metadata, .tags { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.83rem; overflow-wrap: anywhere; }
