@@ -30,13 +30,13 @@
     {% for version in note_versions %}
     {% if version.is_active %}
     <div class="version-line version-line-active">
-      <span class="badge version-lang-badge">{{ version.language|upper }} {{ "Original" if version.language == 'es' else 'English' }}</span>
+      <span class="badge version-lang-badge">{{ version.language|upper }}</span>
       <span class="version-link-title">{{ version.title }}</span>
       <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
     </div>
     {% else %}
     <a class="version-line version-line-link" href="{{ url_for('edit_note', filename=version.filename) }}">
-      <span class="badge version-lang-badge">{{ version.language|upper }} {{ "Original" if version.language == 'es' else 'English' }}</span>
+      <span class="badge version-lang-badge">{{ version.language|upper }}</span>
       <span class="version-link-title">{{ version.title }}</span>
       <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
     </a>
