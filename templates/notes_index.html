@@ -2,25 +2,25 @@
 
 {% block content %}
 <section class="section-head">
-  <h2 class="section-title">Notas</h2>
-  <p>Bitácora editorial, ordenada de más nueva a más antigua.</p>
-  <p class="notes-summary">{{ notes_total }} notas publicadas.</p>
+  <h2 class="section-title">{{ locale.notes.page_title }}</h2>
+  <p>{{ locale.notes.intro }}</p>
+  <p class="notes-summary">{{ notes_total_label }}</p>
 </section>
 
 {% if pagination.total_pages > 1 %}
-<nav class="pagination pagination-top" aria-label="Paginación de notas">
+<nav class="pagination pagination-top" aria-label="Notes pagination">
   {% if pagination.has_prev %}
-    <a href="{{ pagination.prev_url }}">Más nuevas</a>
+    <a href="{{ pagination.prev_url }}">{{ locale.notes.newer }}</a>
   {% else %}
-    <span class="pagination-disabled">Más nuevas</span>
+    <span class="pagination-disabled">{{ locale.notes.newer }}</span>
   {% endif %}
 
-  <span class="pagination-meta">Página {{ pagination.page }} de {{ pagination.total_pages }}</span>
+  <span class="pagination-meta">{{ pagination.label }}</span>
 
   {% if pagination.has_next %}
-    <a href="{{ pagination.next_url }}">Más antiguas</a>
+    <a href="{{ pagination.next_url }}">{{ locale.notes.older }}</a>
   {% else %}
-    <span class="pagination-disabled">Más antiguas</span>
+    <span class="pagination-disabled">{{ locale.notes.older }}</span>
   {% endif %}
 </nav>
 {% endif %}
@@ -29,7 +29,7 @@
   {% for note in notes %}
     <article class="card note-card">
       <header>
-        <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
+        <h3 class="card-title"><a href="{{ note.path }}">{{ note.title }}</a></h3>
         <p class="meta">{{ note.date_label }}</p>
       </header>
       <p>{{ note.excerpt_html | safe }}</p>
@@ -39,23 +39,27 @@
         {% endfor %}
       </p>
     </article>
+  {% else %}
+    <article class="card note-card">
+      <p>{{ locale.notes.empty }}</p>
+    </article>
   {% endfor %}
 </div>
 
 {% if pagination.total_pages > 1 %}
-<nav class="pagination" aria-label="Paginación de notas">
+<nav class="pagination" aria-label="Notes pagination">
   {% if pagination.has_prev %}
-    <a href="{{ pagination.prev_url }}">Más nuevas</a>
+    <a href="{{ pagination.prev_url }}">{{ locale.notes.newer }}</a>
   {% else %}
-    <span class="pagination-disabled">Más nuevas</span>
+    <span class="pagination-disabled">{{ locale.notes.newer }}</span>
   {% endif %}
 
-  <span class="pagination-meta">Página {{ pagination.page }} de {{ pagination.total_pages }}</span>
+  <span class="pagination-meta">{{ pagination.label }}</span>
 
   {% if pagination.has_next %}
-    <a href="{{ pagination.next_url }}">Más antiguas</a>
+    <a href="{{ pagination.next_url }}">{{ locale.notes.older }}</a>
   {% else %}
-    <span class="pagination-disabled">Más antiguas</span>
+    <span class="pagination-disabled">{{ locale.notes.older }}</span>
   {% endif %}
 </nav>
 {% endif %}

@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="{{ html_lang }}">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="refresh" content="0; url={{ redirect_url }}" />
-    <link rel="canonical" href="{{ site.domain.rstrip('/') }}{{ redirect_url }}" />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="{{ site['domain'].rstrip('/') }}{{ redirect_url }}" />
     <title>{{ page_title }} · {{ site.title }}</title>
   </head>
   <body>

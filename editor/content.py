@@ -15,7 +15,7 @@ from typing import Any, Mapping
 import yaml
 from dateutil import parser as date_parser
 
-from generator.lib.notes import FRONT_MATTER_PATTERN
+from generator.lib.notes import DEFAULT_LANGUAGE, FRONT_MATTER_PATTERN, RESERVED_NOTE_SLUGS, note_id_from_filename, note_path
 from generator.lib.utils import slugify
 
 
@@ -28,6 +28,8 @@ MAX_SUMMARY_LENGTH = 1_000
 MAX_TAGS = 30
 MAX_TAG_LENGTH = 60
 MAX_SLUG_LENGTH = 120
+MAX_NOTE_ID_LENGTH = 200
+NOTE_ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class ContentError(Exception):
@@ -72,6 +74,8 @@ class NoteSummary:
     tags: tuple[str, ...]
     summary: str
     slug: str
+    language: str = DEFAULT_LANGUAGE
+    note_id: str = ""
     has_draft: bool = False
     published_exists: bool = False
     validation_error: str = ""
@@ -96,6 +100,8 @@ class EditableNote:
             "tags": ", ".join(str(tag) for tag in tags),
             "summary": str(self.metadata.get("summary", "")),
             "slug": str(self.metadata.get("slug") or slug_from_filename(self.filename)),
+            "lang": _language_from_metadata(self.metadata),
+            "note_id": _note_id_from_metadata(self.filename, self.metadata),
             "body": self.body,
         }
 
@@ -109,6 +115,25 @@ def _metadata_value(value: Any) -> str:
 def slug_from_filename(filename: str) -> str:
     stem = filename.removesuffix(".md")
     return DATE_PREFIX_PATTERN.sub("", stem)
+
+
+def _language_from_metadata(metadata: Mapping[str, Any]) -> str:
+    candidate = str(metadata.get("lang", DEFAULT_LANGUAGE) or DEFAULT_LANGUAGE).strip().lower()
+    if candidate not in RESERVED_NOTE_SLUGS:
+        return DEFAULT_LANGUAGE
+    return candidate
+
+
+def _validated_language(raw_value: Any) -> str:
+    candidate = str(raw_value or DEFAULT_LANGUAGE).strip().lower()
+    if candidate not in RESERVED_NOTE_SLUGS:
+        raise ValidationError("El idioma debe ser es o en.")
+    return candidate
+
+
+def _note_id_from_metadata(filename: str, metadata: Mapping[str, Any]) -> str:
+    explicit = str(metadata.get("note_id", "")).strip()
+    return explicit or note_id_from_filename(filename)
 
 
 def parse_document(raw: str) -> ParsedDocument:
@@ -216,6 +241,8 @@ class ContentRepository:
                     tags=tags,
                     summary=str(metadata.get("summary", "")),
                     slug=str(metadata.get("slug") or slug_from_filename(path.name)),
+                    language=_language_from_metadata(metadata),
+                    note_id=_note_id_from_metadata(path.name, metadata),
                     has_draft=published and (self.drafts_dir / path.name).is_file(),
                     published_exists=(self.notes_dir / path.name).is_file(),
                 )
@@ -227,6 +254,8 @@ class ContentRepository:
                     tags=(),
                     summary="",
                     slug=slug_from_filename(path.name),
+                    language=DEFAULT_LANGUAGE,
+                    note_id=note_id_from_filename(path.name),
                     validation_error=str(exc),
                 )
             items.append(item)
@@ -289,6 +318,11 @@ class ContentRepository:
         if len(normalized_slug) > MAX_SLUG_LENGTH or not SLUG_PATTERN.fullmatch(normalized_slug):
             raise ValidationError("El slug no es válido.")
 
+        language = _validated_language(payload.get("lang", _language_from_metadata(base_metadata)))
+        note_id = str(payload.get("note_id", "")).strip() or note_id_from_filename(filename)
+        if len(note_id) > MAX_NOTE_ID_LENGTH or not NOTE_ID_PATTERN.fullmatch(note_id):
+            raise ValidationError("El ID compartido no es válido.")
+
         summary = str(payload.get("summary", "")).strip()
         if len(summary) > MAX_SUMMARY_LENGTH:
             raise ValidationError(f"El resumen admite hasta {MAX_SUMMARY_LENGTH} caracteres.")
@@ -324,9 +358,23 @@ class ContentRepository:
         else:
             metadata.pop("slug", None)
 
+        if language != DEFAULT_LANGUAGE or "lang" in metadata:
+            metadata["lang"] = language
+        else:
+            metadata.pop("lang", None)
+
+        derived_note_id = note_id_from_filename(filename)
+        if note_id != derived_note_id or "note_id" in metadata:
+            metadata["note_id"] = note_id
+        else:
+            metadata.pop("note_id", None)
+
         return metadata, body, parsed_date.date().isoformat()
 
-    def _ensure_unique_slug(self, slug: str, exclude_filename: str) -> None:
+    def _ensure_unique_slug(self, slug: str, exclude_filename: str, language: str) -> None:
+        if slug in RESERVED_NOTE_SLUGS[language]:
+            raise CollisionError("El slug está reservado para rutas del sitio.")
+
         effective_paths: dict[str, Path] = {}
         for path in self.notes_dir.glob("*.md"):
             if not path.is_symlink():
@@ -340,10 +388,12 @@ class ContentRepository:
                 continue
             try:
                 _, document = self._read(path)
+                existing_language = _language_from_metadata(document.metadata)
                 existing_slug = slugify(str(document.metadata.get("slug") or slug_from_filename(filename)))
             except ContentError:
+                existing_language = DEFAULT_LANGUAGE
                 existing_slug = slug_from_filename(filename)
-            if existing_slug == slug:
+            if existing_language == language and existing_slug == slug:
                 raise CollisionError(f"El slug ya está usado por {filename}.")
 
     def _atomic_write(self, target: Path, content: bytes, *, replace: bool) -> None:
@@ -386,6 +436,7 @@ class ContentRepository:
         except (TypeError, ValueError, OverflowError) as exc:
             raise ValidationError("La fecha debe usar un formato ISO válido.") from exc
 
+        language = _validated_language(payload.get("lang", ""))
         normalized_slug = slugify(str(payload.get("slug", "")).strip() or title)
         if len(normalized_slug) > MAX_SLUG_LENGTH or not SLUG_PATTERN.fullmatch(normalized_slug):
             raise ValidationError("No se pudo generar un slug válido.")
@@ -397,7 +448,7 @@ class ContentRepository:
             if draft_path.exists() or published_path.exists():
                 raise CollisionError("Ya existe una nota o borrador con ese nombre.")
             metadata, body, _ = self._validated_fields(payload, filename, {})
-            self._ensure_unique_slug(normalized_slug, filename)
+            self._ensure_unique_slug(normalized_slug, filename, language)
             serialized = serialize_document(metadata, body).encode("utf-8")
             self._atomic_write(draft_path, serialized, replace=False)
         return self.load_for_edit(filename)
@@ -436,7 +487,8 @@ class ContentRepository:
 
             metadata, body, _ = self._validated_fields(payload, filename, document.metadata)
             effective_slug = str(metadata.get("slug") or slug_from_filename(filename))
-            self._ensure_unique_slug(effective_slug, filename)
+            effective_language = _language_from_metadata(metadata)
+            self._ensure_unique_slug(effective_slug, filename, effective_language)
             serialized = serialize_document(metadata, body).encode("utf-8")
             self._atomic_write(draft_path, serialized, replace=True)
 
@@ -465,7 +517,7 @@ class ContentRepository:
             raise RevisionConflict("La fuente publicada cambió desde que abriste el borrador.")
         return True
 
-    def _strict_publication_metadata(self, filename: str, raw: bytes) -> tuple[ParsedDocument, str]:
+    def _strict_publication_metadata(self, filename: str, raw: bytes) -> tuple[ParsedDocument, str, str]:
         try:
             date.fromisoformat(filename[:10])
         except ValueError as exc:
@@ -505,6 +557,8 @@ class ContentRepository:
         if isinstance(metadata.get("summary"), str) and len(metadata["summary"]) > MAX_SUMMARY_LENGTH:
             raise ValidationError("El resumen publicado es demasiado largo.")
 
+        language = _validated_language(metadata.get("lang", DEFAULT_LANGUAGE))
+
         raw_slug = metadata.get("slug", slug_from_filename(filename))
         if not isinstance(raw_slug, str):
             raise ValidationError("El slug publicado debe ser un string.")
@@ -516,18 +570,28 @@ class ContentRepository:
             or slugify(effective_slug) != effective_slug
         ):
             raise ValidationError("El slug publicado no es válido.")
-        return document, effective_slug
+        if effective_slug in RESERVED_NOTE_SLUGS[language]:
+            raise ValidationError("El slug publicado está reservado para rutas del sitio.")
 
-    def _ensure_unique_published_slug(self, slug: str, exclude_filename: str) -> None:
+        note_id = str(metadata.get("note_id", note_id_from_filename(filename))).strip()
+        if len(note_id) > MAX_NOTE_ID_LENGTH or not NOTE_ID_PATTERN.fullmatch(note_id):
+            raise ValidationError("El ID compartido publicado no es válido.")
+        return document, effective_slug, language
+
+    def _ensure_unique_published_slug(self, slug: str, exclude_filename: str, language: str) -> None:
+        if slug in RESERVED_NOTE_SLUGS[language]:
+            raise CollisionError("El slug está reservado para rutas del sitio.")
+
         for path in self.notes_dir.glob("*.md"):
             if path.name == exclude_filename or path.is_symlink() or not path.is_file():
                 continue
             try:
                 raw = self._read_bytes(path)
-                _, existing_slug = self._strict_publication_metadata(path.name, raw)
+                _, existing_slug, existing_language = self._strict_publication_metadata(path.name, raw)
             except ContentError:
                 existing_slug = slug_from_filename(path.name)
-            if existing_slug == slug:
+                existing_language = DEFAULT_LANGUAGE
+            if existing_language == language and existing_slug == slug:
                 raise CollisionError(f"El slug ya está publicado por {path.name}.")
 
     def published_slug(self, filename: str) -> str:
@@ -535,8 +599,16 @@ class ContentRepository:
         if not published_path.exists():
             raise NoteNotFound("La nota publicada no existe.")
         raw = self._read_bytes(published_path)
-        _, slug = self._strict_publication_metadata(filename, raw)
+        _, slug, _ = self._strict_publication_metadata(filename, raw)
         return slug
+
+    def published_note_info(self, filename: str) -> dict[str, str]:
+        published_path = self._path(self.notes_dir, filename)
+        if not published_path.exists():
+            raise NoteNotFound("La nota publicada no existe.")
+        raw = self._read_bytes(published_path)
+        _, slug, language = self._strict_publication_metadata(filename, raw)
+        return {"slug": slug, "language": language, "path": note_path(language, slug)}
 
     def publish_draft(
         self,
@@ -557,8 +629,8 @@ class ContentRepository:
                 raise RevisionConflict("El borrador cambió desde que lo abriste. Recargá la página.")
 
             replace_existing = self._validate_published_revision(published_path, published_revision)
-            _, effective_slug = self._strict_publication_metadata(filename, raw)
-            self._ensure_unique_published_slug(effective_slug, filename)
+            _, effective_slug, language = self._strict_publication_metadata(filename, raw)
+            self._ensure_unique_published_slug(effective_slug, filename, language)
             self._atomic_write(published_path, raw, replace=replace_existing)
 
             try:

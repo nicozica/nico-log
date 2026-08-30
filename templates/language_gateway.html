@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" data-theme="editorial">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0f0e" />
+    <title>{{ page_title }} · {{ site.title }}</title>
+    <meta name="description" content="{{ page_description }}" />
+    <link rel="canonical" href="{{ site['domain'].rstrip('/') }}/" />
+    {% for alternate in alternate_languages %}
+    <link rel="alternate" hreflang="{{ alternate.hreflang }}" href="{{ site['domain'].rstrip('/') }}{{ alternate.href }}" />
+    {% endfor %}
+    <link rel="alternate" hreflang="x-default" href="{{ site['domain'].rstrip('/') }}/" />
+    <link rel="icon" href="/favicon-v2.svg" type="image/svg+xml" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/assets/css/main.css?v={{ build_id }}" />
+    <link rel="stylesheet" href="/assets/css/terminal.css" />
+  </head>
+  <body>
+    <main id="content" class="page-content">
+      <section class="section-head">
+        <h1 class="section-title">{{ gateway.title }}</h1>
+        <p>{{ gateway.body }}</p>
+      </section>
+
+      <section class="stack">
+        <article class="card">
+          <h2 class="card-title"><a href="/es/">{{ gateway.es_label }}</a></h2>
+          <p>Canonical Spanish source and the complete archive so far.</p>
+        </article>
+        <article class="card">
+          <h2 class="card-title"><a href="/en/">{{ gateway.en_label }}</a></h2>
+          <p>English translations and adaptations as they become available.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

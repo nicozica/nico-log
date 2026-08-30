@@ -2,7 +2,9 @@ site:
   title: nico://log
   domain: https://www.nico.com.ar
   tagline: Corriendo en Alpine Linux con 512 MB de RAM
+  tagline_en: Running on Alpine Linux with 512 MB of RAM
   description: Notas cortas en español sobre lo que estoy armando, arreglando y aprendiendo.
+  description_en: Short notes in English and Spanish about what I am building, fixing, and learning.
   author: Nico
   city: Buenos Aires
   timezone: America/Argentina/Buenos_Aires

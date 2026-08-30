@@ -1,51 +1,60 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if locale.code == 'es' %}
 <section class="section-head">
-  <h2 class="section-title">Acerca</h2>
-  <p>Un proyecto low tech: hosteado en una microSD, con Alpine Linux 64 bit y apenas 512 MB de RAM.</p>
+  <h2 class="section-title">{{ locale.about.page_title }}</h2>
+  <p>{{ locale.about.hero }}</p>
 </section>
 
 <section class="card prose about-story">
   <p class="about-lead">
-    Este sitio vive en una máquina mínima, con una idea simple: publicar contenido propio con mínimos recursos,
-    sin abrir puertos innecesarios y sin complejizar lo que debería ser liviano.
+    {{ locale.about.lead }}
   </p>
 
   <div class="about-scene">
     <figure class="about-photo">
-      <img src="/assets/img/about/pizero.webp" alt="Raspberry Pi Zero 2 W en primer plano" loading="lazy" />
-      <figcaption>Raspberry Pi Zero 2 W, una microcomputadora que cabe en el bolsillo.</figcaption>
+      <img src="/assets/img/about/pizero.webp" alt="{{ locale.about.photo_one_alt }}" loading="lazy" />
+      <figcaption>{{ locale.about.photo_one_caption }}</figcaption>
     </figure>
     <div class="about-copy">
-      <h3 class="card-title">Todo empieza en una placa diminuta</h3>
+      <h3 class="card-title">{{ locale.about.scene_one_title }}</h3>
       <p>
-        Lo que ves acá no corre en infraestructura gigante: corre en una <a href="https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" href="https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" 
-     target="_blank" rel="noopener noreferrer" title="Especificaciones de Raspberry Pi Zero 2 W"><strong>Raspberry Pi Zero 2 W</strong></a>, una microcomputadora que sirve archivos
-        estáticos con NGINX. Es una decisión técnica, pero también editorial: menos capas y más control.
+        {{ locale.about.scene_one_body }}
+        <a href="https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" target="_blank" rel="noopener noreferrer" title="{{ locale.about.scene_one_link_title }}"><strong>Raspberry Pi Zero 2 W</strong></a>,
+        {{ locale.about.scene_one_body_suffix }}
       </p>
-      <p class="meta">Runtime actual: {{ about.runtime }}.</p>
+      <p class="meta">{{ locale.about.runtime_label }} {{ about.runtime }}.</p>
     </div>
   </div>
 
   <div class="about-scene about-scene-reverse">
     <figure class="about-photo">
-      <img src="/assets/img/about/pizero-in-pod.webp" alt="Raspberry Pi Zero 2 W montada en su gabinete" loading="lazy" />
-      <figcaption>La microcomputadora en su gabinete, lista para quedar encendida 24/7.</figcaption>
+      <img src="/assets/img/about/pizero-in-pod.webp" alt="{{ locale.about.photo_two_alt }}" loading="lazy" />
+      <figcaption>{{ locale.about.photo_two_caption }}</figcaption>
     </figure>
     <div class="about-copy">
-      <h3 class="card-title">Cómo sale a Internet sin exponerse de más</h3>
-      <p>
-        El servidor no se publica abriendo puertos de entrada. En cambio, mantiene una conexión saliente mediante túnel seguro y
-        responde a través de HTTPS. El objetivo es claro: superficie chica de ataque y operación predecible.
-      </p>
+      <h3 class="card-title">{{ locale.about.scene_two_title }}</h3>
+      <p>{{ locale.about.scene_two_body }}</p>
       <ul class="about-list">
-        <li>Contenido estático generado con Python.</li>
-        <li>Cache local para tolerar fallos de servicios externos.</li>
-        <li>Operación continua en un nodo doméstico, sin doxear detalles sensibles.</li>
+        <li>{{ locale.about.bullet_one }}</li>
+        <li>{{ locale.about.bullet_two }}</li>
+        <li>{{ locale.about.bullet_three }}</li>
       </ul>
       <p>{{ about.philosophy }}</p>
     </div>
   </div>
 </section>
+{% else %}
+<section class="section-head">
+  <h2 class="section-title">{{ locale.about.page_title }}</h2>
+  <p>{{ locale.about.hero }}</p>
+</section>
+
+<section class="card prose about-story">
+  <p>{{ locale.about.translation_pending }}</p>
+  <p><a href="/es/acerca/">{{ locale.about.original_link }}</a></p>
+  <p class="meta">Runtime: {{ about.runtime }}.</p>
+</section>
+{% endif %}
 {% endblock %}

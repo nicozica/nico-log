@@ -1,31 +1,38 @@
 <!doctype html>
-<html lang="es" data-theme="editorial">
+<html lang="{{ html_lang }}" data-theme="editorial">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0f0e" />
     <title>{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}</title>
-    <meta name="description" content="{{ site.description }}" />
+    <meta name="description" content="{{ page_description or site.description }}" />
+    <link rel="canonical" href="{{ site['domain'].rstrip('/') }}{{ canonical_path }}" />
+    {% for alternate in alternate_languages %}
+    <link rel="alternate" hreflang="{{ alternate.hreflang }}" href="{{ site['domain'].rstrip('/') }}{{ alternate.href }}" />
+    {% endfor %}
+    {% if x_default_path %}
+    <link rel="alternate" hreflang="x-default" href="{{ site['domain'].rstrip('/') }}{{ x_default_path }}" />
+    {% endif %}
     <meta property="og:type" content="website" />
     <meta property="og:title" content="{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}" />
-    <meta property="og:description" content="{{ site.description }}" />
-    <meta property="og:url" content="{{ site.domain.rstrip('/') }}{{ current_path }}" />
+    <meta property="og:description" content="{{ page_description or site.description }}" />
+    <meta property="og:url" content="{{ site['domain'].rstrip('/') }}{{ canonical_path }}" />
     <meta property="og:site_name" content="{{ site.title }}" />
-    <meta property="og:image" content="{{ site.domain.rstrip('/') }}/assets/img/logo_nicolog.png" />
+    <meta property="og:image" content="{{ site['domain'].rstrip('/') }}/assets/img/logo_nicolog.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="{{ site.title }}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="{% if page_title %}{{ page_title }} · {% endif %}{{ site.title }}" />
-    <meta name="twitter:description" content="{{ site.description }}" />
-    <meta name="twitter:image" content="{{ site.domain.rstrip('/') }}/assets/img/logo_nicolog.png" />
+    <meta name="twitter:description" content="{{ page_description or site.description }}" />
+    <meta name="twitter:image" content="{{ site['domain'].rstrip('/') }}/assets/img/logo_nicolog.png" />
     <meta name="twitter:image:alt" content="{{ site.title }}" />
     <link rel="icon" href="/favicon-v2.svg" type="image/svg+xml" />
     <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="alternate" type="application/rss+xml" title="{{ site.title }} notas RSS" href="/notes/rss.xml" />
-    <link rel="alternate" type="application/atom+xml" title="{{ site.title }} notas Atom" href="/notes/atom.xml" />
-    <link rel="alternate" type="application/feed+json" title="{{ site.title }} Feed JSON" href="/notes/feed.json" />
+    {% for feed_link in feed_links %}
+    <link rel="alternate" type="{{ feed_link.type }}" title="{{ feed_link.title }}" href="{{ feed_link.href }}" />
+    {% endfor %}
     <script>
       (function () {
         try {
@@ -43,31 +50,31 @@
     <script defer src="/assets/js/main.js?v={{ build_id }}"></script>
   </head>
   <body>
-    <a class="skip-link" href="#content">Saltar al contenido</a>
+    <a class="skip-link" href="#content">{{ locale.skip_link }}</a>
     <header class="site-header">
       <div class="site-headline">
-        <h1 class="site-title"><a href="/">{{ site.title }}</a></h1>
+        <h1 class="site-title"><a href="{{ locale.nav.home_path }}">{{ site.title }}</a></h1>
         {% if site.tagline %}
         <p class="site-subtitle">{{ site.tagline }}</p>
         {% endif %}
       </div>
-      <nav class="site-nav" aria-label="Navegación principal">
-        <a href="/" {% if current_path == '/' %}aria-current="page"{% endif %}>Inicio</a>
-        <a href="/notes/" {% if current_path.startswith('/notes/') %}aria-current="page"{% endif %}>Notas</a>
-        <a href="/noticias/" {% if current_path.startswith('/noticias/') %}aria-current="page"{% endif %}>Noticias</a>
-        <a href="/about/" {% if current_path.startswith('/about/') %}aria-current="page"{% endif %}>Acerca</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="{{ locale.nav.home_path }}" {% if current_path == locale.nav.home_path %}aria-current="page"{% endif %}>{{ locale.nav.home_label }}</a>
+        <a href="{{ locale.nav.notes_path }}" {% if current_path.startswith(locale.nav.notes_path) %}aria-current="page"{% endif %}>{{ locale.nav.notes_label }}</a>
+        <a href="{{ locale.nav.news_path }}" {% if current_path.startswith(locale.nav.news_path) %}aria-current="page"{% endif %}>{{ locale.nav.news_label }}</a>
+        <a href="{{ locale.nav.about_path }}" {% if current_path.startswith(locale.nav.about_path) %}aria-current="page"{% endif %}>{{ locale.nav.about_label }}</a>
       </nav>
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Cambiar a modo terminal">
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="{{ locale.theme_toggle_aria }}">
         <span class="theme-toggle__icon" aria-hidden="true">☾</span>
-        <span class="theme-toggle__label">Terminal</span>
+        <span class="theme-toggle__label">{{ locale.theme_toggle_label }}</span>
       </button>
     </header>
 
     <div class="status-bar" role="status" aria-live="polite">
-      <span><strong>Actualizado:</strong> {{ build.updated_label }}</span>
+      <span><strong>{{ locale.status.updated }}:</strong> {{ build.updated_label }}</span>
       {% if status_summary.metrics_available %}
-      <span><strong>Uptime:</strong> {{ status_summary.uptime_label }}</span>
-      <span><strong>Temp CPU:</strong> {{ status_summary.cpu_temp_label }}</span>
+      <span><strong>{{ locale.status.uptime }}:</strong> {{ status_summary.uptime_label }}</span>
+      <span><strong>{{ locale.status.cpu_temp }}:</strong> {{ status_summary.cpu_temp_label }}</span>
       {% endif %}
     </div>
 
@@ -76,8 +83,8 @@
     </main>
 
     <footer class="site-footer">
-      <section class="webring" aria-label="Anillo web">
-        <span class="webring-title">Webring</span>
+      <section class="webring" aria-label="{{ locale.footer.webring }}">
+        <span class="webring-title">{{ locale.footer.webring }}</span>
         {% for link in footer.links %}
           <a href="{{ link.href }}" target="_blank" rel="noopener noreferrer">
             {{ link.label }}
@@ -85,9 +92,11 @@
         {% endfor %}
       </section>
       <p class="colophon">
-        estático, cacheado, regenerado cada {{ site.regenerate_minutes }} min ·
-        <a href="/notes/rss.xml">RSS</a> ·
-        <a href="/notes/feed.json">Feed JSON</a> ·
+        {{ locale.footer.colophon.format(minutes=site.regenerate_minutes) }} ·
+        {% for feed_link in feed_links %}
+          <a href="{{ feed_link.href }}">{{ feed_link.label }}</a>{% if not loop.last %} ·{% endif %}
+        {% endfor %}
+        {% if feed_links %} ·{% endif %}
         build: {{ build_id }}
       </p>
     </footer>

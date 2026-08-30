@@ -24,10 +24,12 @@
       <div class="note-copy">
         <div class="note-heading">
           <h3>{{ note.title }}</h3>
+          <span class="badge">{{ note.language|upper }}</span>
           {% if note.has_draft %}<span class="badge badge-draft">Borrador</span>{% endif %}
           {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
         <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
+        <p class="metadata">ID compartido: {{ note.note_id }}</p>
         {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
       </div>
     </a>
@@ -48,10 +50,12 @@
       <div class="note-copy">
         <div class="note-heading">
           <h3>{{ note.title }}</h3>
+          <span class="badge">{{ note.language|upper }}</span>
           <span class="badge badge-draft">{{ "Cambios sin publicar" if note.published_exists else "Nueva" }}</span>
           {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
         <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
+        <p class="metadata">ID compartido: {{ note.note_id }}</p>
         {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
       </div>
     </a>

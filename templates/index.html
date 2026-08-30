@@ -2,7 +2,7 @@
 {% import "partials/icons.html" as icons %}
 
 {% block content %}
-<section class="home-grid" aria-label="Panel principal">
+<section class="home-grid" aria-label="{{ locale.home.main_label }}">
   <h2 class="section-title home-heading">{{ latest_notes_title }}</h2>
   {% if latest_notes_subtitle %}
   <p class="section-subtitle home-subtitle">{{ latest_notes_subtitle }}</p>
@@ -13,7 +13,7 @@
       {% for note in latest_notes %}
       <article class="card note-card">
         <header>
-          <h3 class="card-title"><a href="/notes/{{ note.slug }}/">{{ note.title }}</a></h3>
+          <h3 class="card-title"><a href="{{ note.path }}">{{ note.title }}</a></h3>
           <p class="meta">{{ note.date_label }}</p>
         </header>
         <p>{{ note.excerpt_html | safe }}</p>
@@ -22,34 +22,38 @@
             <span class="pill">{{ tag }}</span>
           {% endfor %}
         </p>
-        <a class="read-link" href="/notes/{{ note.slug }}/">leer</a>
+        <a class="read-link" href="{{ note.path }}">{{ locale.home.read_link }}</a>
+      </article>
+      {% else %}
+      <article class="card note-card">
+        <p>{{ locale.home.empty_notes }}</p>
       </article>
       {% endfor %}
     </div>
     {% if total_notes_count > latest_notes|length %}
-    <p class="home-notes-more"><a href="/notes/">Ver más notas</a></p>
+    <p class="home-notes-more"><a href="{{ locale.nav.notes_path }}">{{ locale.home.more_notes }}</a></p>
     {% endif %}
   </div>
 
-  <aside class="home-side" aria-label="Columna lateral">
+  <aside class="home-side" aria-label="{{ locale.home.sidebar_label }}">
     <section class="card compact weather-card">
-      <h2 class="section-title">Clima · {{ site.city }}</h2>
+      <h2 class="section-title">{{ locale.home.weather_title }} · {{ site.city }}</h2>
       <p class="metric">{{ weather.temp_label }}</p>
       <p class="weather-condition">
         <span class="inline-icon" aria-hidden="true">{{ icons.inline(weather.icon) }}</span>
-        <span class="sr-only">Condición del clima:</span>
+        <span class="sr-only">{{ locale.home.weather_condition_sr }}</span>
         <span>{{ weather.description }}</span>
       </p>
       <p class="meta">Humedad {{ weather.humidity_label }} · Viento {{ weather.wind_label }}</p>
       {% if weather.forecast %}
-      <div class="weather-forecast" aria-label="Pronóstico breve">
+      <div class="weather-forecast" aria-label="{{ locale.home.forecast_label }}">
         <ul class="forecast-list">
           {% for day in weather.forecast %}
           <li>
             <span class="forecast-day">{{ day.label }}</span>
             <span class="forecast-summary">
               <span class="inline-icon" aria-hidden="true">{{ icons.inline(day.icon) }}</span>
-              <span class="sr-only">Condición {{ day.description }}.</span>
+              <span class="sr-only">{{ day.description }}.</span>
               <span class="forecast-temps">{{ day.temp_range_label }}</span>
             </span>
           </li>
@@ -60,13 +64,13 @@
     </section>
 
     <section class="card now-playing" data-now-playing data-now-endpoint="{{ now_api_url }}" data-now-refresh="{{ 'true' if now.refresh_enabled else 'false' }}" data-now-stream-src="{{ now_player_stream_url }}">
-      <h2 class="section-title">Ahora sonando</h2>
+      <h2 class="section-title">{{ locale.home.now_title }}</h2>
       <div class="now-playing-row">
         <img
           class="np-cover"
           data-now-cover
           src="/assets/img/blurfm-cover-default.svg"
-          alt="Tapa del tema actual"
+          alt="Album cover"
           width="64"
           height="64"
           loading="lazy"
@@ -74,27 +78,27 @@
         <div class="now-playing-copy">
           <p class="now-meta-line now-meta-track">
             <span class="inline-icon" aria-hidden="true">{{ icons.inline("music") }}</span>
-            <span class="sr-only">Tema:</span>
-            <span class="now-meta-value" data-now-track>{{ now.track if now.available else "No disponible" }}</span>
+            <span class="sr-only">{{ locale.home.track_label }}</span>
+            <span class="now-meta-value" data-now-track>{{ now.track if now.available else locale.home.unavailable }}</span>
           </p>
           <p class="now-meta-line" data-now-artist-row{% if not now.available or not now.artist %} hidden{% endif %}>
             <span class="inline-icon" aria-hidden="true">{{ icons.inline("artist") }}</span>
-            <span class="sr-only">Artista:</span>
+            <span class="sr-only">{{ locale.home.artist_label }}</span>
             <span class="now-meta-value" data-now-artist>{{ now.artist }}</span>
           </p>
           <p class="now-meta-line" data-now-album-row>
             <span class="inline-icon" aria-hidden="true">{{ icons.inline("album") }}</span>
-            <span class="sr-only">Álbum:</span>
-            <span class="now-meta-value" data-now-album>{{ now.album or "No disponible" }}</span>
+            <span class="sr-only">{{ locale.home.album_label }}</span>
+            <span class="now-meta-value" data-now-album>{{ now.album or locale.home.unavailable }}</span>
           </p>
           <p class="now-meta-line" data-now-year-row>
             <span class="inline-icon" aria-hidden="true">{{ icons.inline("calendar") }}</span>
-            <span class="sr-only">Año:</span>
-            <span class="now-meta-value" data-now-year>{{ now.year or "No disponible" }}</span>
+            <span class="sr-only">{{ locale.home.year_label }}</span>
+            <span class="now-meta-value" data-now-year>{{ now.year or locale.home.unavailable }}</span>
           </p>
           <div class="actions">
             <button class="np-toggle" id="np-toggle" type="button" data-np-toggle aria-label="Play Blur FM">▶</button>
-            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">Abrir en Blur FM ↗</a>
+            <a href="{{ now_stream_url }}" data-now-stream-link target="_blank" rel="noopener noreferrer">{{ locale.home.open_stream }}</a>
           </div>
           <audio id="np-audio" data-np-audio preload="none"></audio>
         </div>
@@ -102,17 +106,17 @@
     </section>
 
     <section class="card compact">
-      <h2 class="section-title">Noticias</h2>
+      <h2 class="section-title">{{ locale.home.news_title }}</h2>
       {% set links = links_preview[:6] %}
       {% set list_class = "link-list-compact" %}
       {% include "partials/link_list.html" %}
-      <p><a href="/noticias/">Ver todas</a></p>
+      <p><a href="{{ locale.nav.news_path }}">{{ locale.home.news_more }}</a></p>
     </section>
   </aside>
 </section>
 
-<section class="tiny-thing" aria-label="Mini del día">
-  <h2 class="section-title">Mini del día</h2>
+<section class="tiny-thing" aria-label="{{ locale.home.tiny_title }}">
+  <h2 class="section-title">{{ locale.home.tiny_title }}</h2>
   <p>{{ tiny_thing }}</p>
 </section>
 {% endblock %}

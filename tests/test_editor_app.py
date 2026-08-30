@@ -45,6 +45,8 @@ class EditorAppTests(unittest.TestCase):
                 "tags": "flask, editor",
                 "summary": "Private",
                 "slug": "from-flask",
+                "lang": "es",
+                "note_id": "",
                 "body": "Draft only.",
             },
         )
@@ -76,6 +78,8 @@ class EditorAppTests(unittest.TestCase):
                 "tags": "",
                 "summary": "",
                 "slug": "existing",
+                "lang": "es",
+                "note_id": "",
                 "body": "My edit.",
                 "revision": opened.revision,
             },
@@ -93,25 +97,28 @@ class EditorAppTests(unittest.TestCase):
         )
 
         index = self.client.get("/")
-        self.assertIn(b"<title>Editor \xc2\xb7 Notas</title>", index.data)
+        self.assertIn("<title>Editor · Notas</title>".encode(), index.data)
         self.assertIn(b'class="note-row"', index.data)
         self.assertIn(f'href="/notes/{filename}/edit"'.encode(), index.data)
         self.assertNotIn(b">Editar</a>", index.data)
         self.assertIn(b"data-theme-toggle", index.data)
         self.assertIn(b'href="/favicon.svg"', index.data)
+        self.assertIn(b"ID compartido", index.data)
 
         edit = self.client.get(f"/notes/{filename}/edit")
-        self.assertIn(b"<title>Editor \xc2\xb7 Existing</title>", edit.data)
+        self.assertIn("<title>Editor · Existing</title>".encode(), edit.data)
         self.assertIn(b"toastui-editor-3.2.2/toastui-editor-all.min.js", edit.data)
         self.assertIn(b"data-markdown-source", edit.data)
         self.assertIn(b"data-wysiwyg-editor", edit.data)
         self.assertIn(b">Fecha</label>", edit.data)
         self.assertNotIn(b"Fecha ISO", edit.data)
-        self.assertIn(b"placeholder=\"Filtrar por t\xc3\xadtulo, tag o archivo\"", index.data)
-        self.assertIn(b"aria-label=\"Filtrar notas\"", index.data)
-        self.assertNotIn(b"<label for=\"q\">Buscar</label>", index.data)
-        self.assertIn(b"name=\"action\" value=\"save\"", edit.data)
-        self.assertIn(b"name=\"action\" value=\"publish\"", edit.data)
+        self.assertIn(b'placeholder="Filtrar por t\xc3\xadtulo, tag o archivo"', index.data)
+        self.assertIn(b'aria-label="Filtrar notas"', index.data)
+        self.assertNotIn(b'<label for="q">Buscar</label>', index.data)
+        self.assertIn(b'name="action" value="save"', edit.data)
+        self.assertIn(b'name="action" value="publish"', edit.data)
+        self.assertIn(b'name="lang"', edit.data)
+        self.assertIn(b'name="note_id"', edit.data)
 
         editor_script = (Path(__file__).parents[1] / "editor" / "static" / "editor.js").read_text(encoding="utf-8")
         self.assertIn("if (markdownEditor) body.value = markdownEditor.getMarkdown();", editor_script)
@@ -151,7 +158,10 @@ class EditorAppTests(unittest.TestCase):
                 "title": "Existing",
                 "date": "2026-08-16",
                 "tags": "",
+                "summary": "",
                 "slug": "existing",
+                "lang": "es",
+                "note_id": "",
                 "body": "Rejected edit.",
                 "revision": opened.revision,
             },

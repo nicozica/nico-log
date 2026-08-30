@@ -20,6 +20,21 @@
       {% if not is_new %}<small>El nombre del archivo se mantiene al guardar.</small>{% endif %}
     </div>
   </div>
+  <div class="field-grid">
+    <div class="field">
+      <label for="lang">Idioma</label>
+      <select id="lang" name="lang">
+        <option value="es" {% if form.lang == 'es' %}selected{% endif %}>Español</option>
+        <option value="en" {% if form.lang == 'en' %}selected{% endif %}>English</option>
+      </select>
+      <small>Español sigue siendo el original por defecto.</small>
+    </div>
+    <div class="field">
+      <label for="note_id">ID compartido</label>
+      <input id="note_id" name="note_id" value="{{ form.note_id }}" maxlength="200" />
+      <small>Usá el mismo ID para vincular versiones ES/EN. Si lo dejás vacío, se deriva del archivo.</small>
+    </div>
+  </div>
   <div class="field field-wide">
     <label for="tags">Etiquetas</label>
     <input id="tags" name="tags" value="{{ form.tags }}" placeholder="infra, python, low-tech" />

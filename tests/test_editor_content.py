@@ -50,6 +50,8 @@ class ContentRepositoryTests(unittest.TestCase):
             "tags": "python, flask",
             "summary": "Draft summary",
             "slug": "existing-note",
+            "lang": "es",
+            "note_id": "",
             "body": "Draft body.",
         }
         values.update(overrides)
@@ -61,6 +63,7 @@ class ContentRepositoryTests(unittest.TestCase):
         drafts = self.repository.list_drafts()
         self.assertEqual([note.filename for note in published], [self.filename])
         self.assertEqual([note.filename for note in drafts], [draft.filename])
+        self.assertEqual(published[0].language, "es")
 
     def test_create_new_draft(self) -> None:
         note = self.repository.create_draft(self.form(title="New note", date="2026-08-11", slug="new-note"))
@@ -96,6 +99,23 @@ class ContentRepositoryTests(unittest.TestCase):
     def test_rejects_filename_collision(self) -> None:
         with self.assertRaises(CollisionError):
             self.repository.create_draft(self.form(title="Existing note", slug="existing-note"))
+
+    def test_reserved_slug_is_rejected_for_language(self) -> None:
+        with self.assertRaises(CollisionError):
+            self.repository.create_draft(self.form(title="Reserved", date="2026-08-11", slug="notes", lang="en"))
+
+    def test_allows_same_slug_in_other_language(self) -> None:
+        note = self.repository.create_draft(
+            self.form(
+                title="English note",
+                date="2026-08-11",
+                slug="existing-note",
+                lang="en",
+                note_id="2026-08-10-existing-note",
+            )
+        )
+        self.assertEqual(note.form_values()["lang"], "en")
+        self.assertEqual(note.form_values()["note_id"], "2026-08-10-existing-note")
 
     def test_detects_revision_conflict(self) -> None:
         opened = self.repository.load_for_edit(self.filename)

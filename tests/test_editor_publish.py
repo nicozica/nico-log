@@ -61,6 +61,8 @@ class EditorPublishTests(unittest.TestCase):
             "tags": "python, flask",
             "summary": "Draft summary",
             "slug": "existing-note",
+            "lang": "es",
+            "note_id": "",
             "body": "# Draft body\n\n<script>parent.document.body.remove()</script>",
         }
         values.update(overrides)
@@ -165,9 +167,9 @@ class EditorPublishTests(unittest.TestCase):
         response = self.publish(self.filename, draft.revision, draft.published_revision)
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Publicaci", response.data)
-        self.assertIn(b"https://www.nico.com.ar/notes/existing-note/", response.data)
+        self.assertIn(b"https://www.nico.com.ar/es/existing-note/", response.data)
         self.assertIn(
-            b"href=\"https://www.nico.com.ar/notes/existing-note/\" target=\"_blank\" rel=\"noopener\"",
+            b"href=\"https://www.nico.com.ar/es/existing-note/\" target=\"_blank\" rel=\"noopener\"",
             response.data,
         )
         self.assertIn(b"Draft body", (self.notes_dir / self.filename).read_bytes())

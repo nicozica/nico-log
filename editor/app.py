@@ -101,6 +101,8 @@ def create_app(
             "tags": request.form.get("tags", ""),
             "summary": request.form.get("summary", ""),
             "slug": request.form.get("slug", ""),
+            "lang": request.form.get("lang", ""),
+            "note_id": request.form.get("note_id", ""),
             "body": request.form.get("body", ""),
         }
 
@@ -110,12 +112,13 @@ def create_app(
         published_revision: str,
     ) -> tuple[str, int]:
         try:
-            slug = repository.publish_draft(filename, draft_revision, published_revision)
+            repository.publish_draft(filename, draft_revision, published_revision)
+            published = repository.published_note_info(filename)
         except DraftCleanupError as exc:
-            slug = repository.published_slug(filename)
+            published = repository.published_note_info(filename)
             return render_publication_result(
                 filename=filename,
-                slug=slug,
+                public_path=published["path"],
                 result=DeploymentResult(False, str(exc)),
                 source_written=True,
             )
@@ -123,7 +126,7 @@ def create_app(
         result = app.extensions["publisher"].deploy()
         return render_publication_result(
             filename=filename,
-            slug=slug,
+            public_path=published["path"],
             result=result,
             source_written=True,
         )
@@ -135,7 +138,7 @@ def create_app(
         drafts = repository.list_drafts()
         if query:
             def matches(note: Any) -> bool:
-                haystack = " ".join((note.title, note.filename, note.slug, *note.tags)).lower()
+                haystack = " ".join((note.title, note.filename, note.slug, note.language, note.note_id, *note.tags)).lower()
                 return query in haystack
 
             published = [note for note in published if matches(note)]
@@ -150,6 +153,8 @@ def create_app(
             "tags": "",
             "summary": "",
             "slug": "",
+            "lang": "es",
+            "note_id": "",
             "body": "",
         }
         error = ""
@@ -254,11 +259,11 @@ def create_app(
     def render_publication_result(
         *,
         filename: str,
-        slug: str,
+        public_path: str,
         result: DeploymentResult,
         source_written: bool,
     ) -> tuple[str, int]:
-        public_url = f"{PUBLIC_SITE_URL}/notes/{slug}/"
+        public_url = f"{PUBLIC_SITE_URL}{public_path}"
         status = 200 if result.success else 502
         return render_template(
             "publish_result.html",
@@ -292,18 +297,19 @@ def create_app(
         except ValidationError as exc:
             error, status = str(exc), 400
         except DraftCleanupError as exc:
-            slug = repository.published_slug(filename)
+            published = repository.published_note_info(filename)
             return render_publication_result(
                 filename=filename,
-                slug=slug,
+                public_path=published["path"],
                 result=DeploymentResult(False, str(exc)),
                 source_written=True,
             )
         else:
+            published = repository.published_note_info(filename)
             result = app.extensions["publisher"].deploy()
             return render_publication_result(
                 filename=filename,
-                slug=slug,
+                public_path=published["path"],
                 result=result,
                 source_written=True,
             )
@@ -322,7 +328,7 @@ def create_app(
     @app.post("/notes/<filename>/deploy")
     def retry_deploy(filename: str) -> tuple[str, int]:
         try:
-            slug = repository.published_slug(filename)
+            published = repository.published_note_info(filename)
         except (InvalidFilename, NoteNotFound):
             abort(404)
         except ValidationError as exc:
@@ -330,7 +336,7 @@ def create_app(
         result = app.extensions["publisher"].deploy()
         return render_publication_result(
             filename=filename,
-            slug=slug,
+            public_path=published["path"],
             result=result,
             source_written=True,
         )
