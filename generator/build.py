@@ -209,9 +209,10 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
 
 GATEWAY_COPY = {
     'page_title': 'Idioma / Language',
-    'description': 'Choose the Spanish or English version of the site. Automatic root language negotiation is intentionally deferred in this milestone.',
-    'title': 'Elegí idioma / Choose a language',
-    'body': 'This bilingual migration now has stable language-prefixed URLs. Root-language negotiation is intentionally deferred until deployment policy is reviewed.',
+    'description': 'Static fallback for the bilingual site root. Production traffic is routed at nginx.',
+    'title': 'El sitio usa URLs con prefijo de idioma / The site uses language-prefixed URLs',
+    'body': "Production now redirects / to the browser's primary language, and this file remains only as a simple static fallback.",
+    'note': 'Use the prefixed routes directly if you are browsing a local build.',
     'es_label': 'Entrar en español',
     'en_label': 'Enter in English',
 }
@@ -422,7 +423,8 @@ def main() -> None:
     if not isinstance(news_settings, dict):
         news_settings = {}
 
-    if os.environ.get('NICO_BUILD_LOCAL_ONLY') == '1':
+    local_only = os.environ.get('NICO_BUILD_LOCAL_ONLY') == '1'
+    if local_only:
         status_settings = config.get('status', {})
         if isinstance(status_settings, dict):
             status_settings = dict(status_settings)
@@ -456,13 +458,17 @@ def main() -> None:
         for language in notes.LANGUAGE_SETTINGS
     }
 
-    all_links, links_source = feeds.fetch_links(
-        content_path=content_dir / 'feeds.yaml',
-        cache_dir=cache_dir,
-        ttl_minutes=int(config.get('feeds_ttl_minutes', 30)),
-        limit=120,
-        fresh_days=_to_positive_int(news_settings.get('fresh_days', 14), default=14),
-    )
+    if local_only:
+        all_links: list[dict[str, Any]] = []
+        links_source = 'local'
+    else:
+        all_links, links_source = feeds.fetch_links(
+            content_path=content_dir / 'feeds.yaml',
+            cache_dir=cache_dir,
+            ttl_minutes=int(config.get('feeds_ttl_minutes', 30)),
+            limit=120,
+            fresh_days=_to_positive_int(news_settings.get('fresh_days', 14), default=14),
+        )
     links_preview = feeds.select_preview_links(all_links, limit=6)
     weather_data, weather_source = weather.fetch_weather(config, cache_dir)
     status_bundle, _ = status.fetch_status(config, cache_dir)

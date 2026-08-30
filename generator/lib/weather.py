@@ -309,25 +309,29 @@ def _fallback_weather() -> dict[str, Any]:
 def fetch_weather(config: dict[str, Any], cache_dir: Path) -> tuple[dict[str, Any], str]:
     site = config.get("site", {})
     timezone_name = str(site.get("timezone", "America/Argentina/Buenos_Aires")) if isinstance(site, dict) else "America/Argentina/Buenos_Aires"
-    ttl_seconds = _weather_ttl_minutes(config) * 60
-    payload = None
-    source = "fallback"
-
-    for provider in _provider_order(config):
-        cache_file = _cache_file(cache_dir, provider)
-        candidate, candidate_source = _fetch_or_cached(
-            cache_file,
-            ttl_seconds=ttl_seconds,
-            fetcher=lambda provider=provider: _fetch_from_provider(provider, config),
-        )
-        if candidate is None:
-            continue
-        payload = candidate
-        source = f"{provider}/{candidate_source}"
-        break
-
-    if payload is None:
+    if os.environ.get("NICO_BUILD_LOCAL_ONLY") == "1":
         payload = _fallback_weather()
+        source = "fallback/local"
+    else:
+        ttl_seconds = _weather_ttl_minutes(config) * 60
+        payload = None
+        source = "fallback"
+
+        for provider in _provider_order(config):
+            cache_file = _cache_file(cache_dir, provider)
+            candidate, candidate_source = _fetch_or_cached(
+                cache_file,
+                ttl_seconds=ttl_seconds,
+                fetcher=lambda provider=provider: _fetch_from_provider(provider, config),
+            )
+            if candidate is None:
+                continue
+            payload = candidate
+            source = f"{provider}/{candidate_source}"
+            break
+
+        if payload is None:
+            payload = _fallback_weather()
 
     temp = float(payload.get("temp_c", 0.0))
     humidity = int(payload.get("humidity", 0))

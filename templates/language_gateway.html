@@ -23,16 +23,12 @@
         <p>{{ gateway.body }}</p>
       </section>
 
-      <section class="stack">
-        <article class="card">
-          <h2 class="card-title"><a href="/es/">{{ gateway.es_label }}</a></h2>
-          <p>Canonical Spanish source and the complete archive so far.</p>
-        </article>
-        <article class="card">
-          <h2 class="card-title"><a href="/en/">{{ gateway.en_label }}</a></h2>
-          <p>English translations and adaptations as they become available.</p>
-        </article>
-      </section>
+      <p class="meta">{{ gateway.note }}</p>
+      <p>
+        <a href="/es/">{{ gateway.es_label }}</a>
+        ·
+        <a href="/en/">{{ gateway.en_label }}</a>
+      </p>
     </main>
   </body>
 </html>

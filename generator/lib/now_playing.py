@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -360,6 +361,28 @@ def _fetch_from_source_endpoint(
     return normalized_now, normalized_history, f"{payload_source}/live"
 
 
+def _local_only_enabled() -> bool:
+    return os.environ.get("NICO_BUILD_LOCAL_ONLY") == "1"
+
+
+def _fetch_local_mock_data(content_dir: Path) -> tuple[dict[str, Any], list[dict[str, Any]], str]:
+    now_payload = utils.read_json(content_dir / "now_playing_mock.json", {})
+    history_payload = utils.read_json(content_dir / "now_history_mock.json", [])
+
+    if not isinstance(now_payload, dict):
+        now_payload = {}
+    if not isinstance(history_payload, list):
+        history_payload = []
+
+    now_candidate, _ = _parse_source_payload(now_payload, mount="")
+    if now_candidate is None:
+        return _unavailable_now(), [], "local-mock/missing"
+
+    normalized_now = _normalize_now(now_candidate, live=False)
+    normalized_history = _normalize_history(history_payload)
+    return normalized_now, normalized_history, "local-mock"
+
+
 def _fetch_legacy_endpoints(
     config: dict[str, Any],
     cache_dir: Path,
@@ -420,6 +443,9 @@ def fetch_now(
     cache_dir: Path,
     content_dir: Path,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], str]:
+    if _local_only_enabled():
+        return _fetch_local_mock_data(content_dir)
+
     source_result = _fetch_from_source_endpoint(config, cache_dir, content_dir)
     if source_result is not None:
         return source_result

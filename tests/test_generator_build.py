@@ -71,8 +71,10 @@ class GeneratorBuildTests(unittest.TestCase):
             self.assertIn('/es/cuando-una-herramienta-deja-de-ser-un-experimento/', es_feed)
             self.assertIn('/en/when-a-tool-stops-being-an-experiment/', en_feed)
             self.assertIn('hreflang="x-default"', root_html)
-            self.assertIn('/es/', root_html)
-            self.assertIn('/en/', root_html)
+            self.assertIn('Static fallback for the bilingual site root.', root_html)
+            self.assertIn('href="/es/"', root_html)
+            self.assertIn('href="/en/"', root_html)
+            self.assertNotIn('Choose the Spanish or English version of the site.', root_html)
             self.assertIn('A low-tech project: hosted on a microSD card', about_en_html)
             self.assertIn('This portal keeps things simple: static first', about_en_html)
 
