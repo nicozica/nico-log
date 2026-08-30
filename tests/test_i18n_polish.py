@@ -149,8 +149,8 @@ class WeatherLocalizationTests(unittest.TestCase):
             'forecast': [{'date': '2026-08-30', 'description': 'nublado', 'label': 'Domingo', 'icon': 'cloud', 'max_temp_c': 20.0, 'min_temp_c': 10.0, 'temp_range_label': '10° / 20°'}],
         }
         en = weather.localize_weather(es_weather, 'en')
-        self.assertEqual(en['description'], 'clear')
-        self.assertEqual(en['forecast'][0]['description'], 'overcast')
+        self.assertEqual(en['description'], 'Clear')
+        self.assertEqual(en['forecast'][0]['description'], 'Overcast')
 
     def test_localize_weather_en_translates_weekdays(self) -> None:
         es_weather = {
@@ -172,7 +172,7 @@ class WeatherLocalizationTests(unittest.TestCase):
         dist, _ = _build_dist(tmp.name)
         html = (dist / 'en' / 'index.html').read_text(encoding='utf-8')
         tmp.cleanup()
-        self.assertIn('clear', html)
+        self.assertIn('Clear', html)
         self.assertNotIn('despejado', html)
 
     def test_en_home_shows_english_weekday(self) -> None:
@@ -300,8 +300,8 @@ class WeatherConditionVendorTermsTests(unittest.TestCase):
             ],
         }
         en = weather.localize_weather(data, 'en')
-        self.assertEqual(en['description'], 'sunny')
-        self.assertEqual(en['forecast'][0]['description'], 'sunny')
+        self.assertEqual(en['description'], 'Sunny')
+        self.assertEqual(en['forecast'][0]['description'], 'Sunny')
 
     def test_soleado_unchanged_for_es(self) -> None:
         data = {'description': 'Soleado', 'forecast': []}
@@ -312,7 +312,21 @@ class WeatherConditionVendorTermsTests(unittest.TestCase):
     def test_cubierto_maps_to_overcast(self) -> None:
         data = {'description': 'Cubierto', 'forecast': []}
         en = weather.localize_weather(data, 'en')
-        self.assertEqual(en['description'], 'overcast')
+        self.assertEqual(en['description'], 'Overcast')
+
+    def test_en_descriptions_are_sentence_case(self) -> None:
+        cases = [
+            ('despejado', 'Clear'),
+            ('parcialmente nublado', 'Partly cloudy'),
+            ('lluvia leve', 'Light rain'),
+            ('soleado', 'Sunny'),
+            ('tormenta', 'Thunderstorm'),
+        ]
+        for es_desc, expected in cases:
+            with self.subTest(es=es_desc):
+                data = {'description': es_desc, 'forecast': []}
+                en = weather.localize_weather(data, 'en')
+                self.assertEqual(en['description'], expected)
 
     def test_weather_icon_is_sun_for_sunny(self) -> None:
         from generator.lib.weather import _icon_for_description

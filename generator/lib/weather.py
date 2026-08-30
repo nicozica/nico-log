@@ -372,9 +372,13 @@ def localize_weather(weather_data: dict[str, Any], language: str) -> dict[str, A
     if language != "en":
         return weather_data
 
+    def _sentence_case(s: str) -> str:
+        return s[0].upper() + s[1:] if s else s
+
     localized = dict(weather_data)
     es_desc = str(weather_data.get("description", "")).strip().lower()
-    localized["description"] = SPANISH_TO_ENGLISH.get(es_desc, weather_data.get("description", ""))
+    en_desc = SPANISH_TO_ENGLISH.get(es_desc, weather_data.get("description", ""))
+    localized["description"] = _sentence_case(en_desc)
     localized["icon"] = _icon_for_description(localized["description"])
 
     raw_forecast = weather_data.get("forecast", [])
@@ -382,7 +386,7 @@ def localize_weather(weather_data: dict[str, Any], language: str) -> dict[str, A
     for day in raw_forecast:
         day_en = dict(day)
         es_day_desc = str(day.get("description", "")).strip().lower()
-        day_en["description"] = SPANISH_TO_ENGLISH.get(es_day_desc, day.get("description", ""))
+        day_en["description"] = _sentence_case(SPANISH_TO_ENGLISH.get(es_day_desc, day.get("description", "")))
         day_en["icon"] = _icon_for_description(day_en["description"])
         date_val = day.get("date", "")
         if date_val:

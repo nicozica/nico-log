@@ -37,7 +37,7 @@ class LocalBuildOfflineTests(unittest.TestCase):
 
             localized_home = (output_dir / 'en' / 'index.html').read_text(encoding='utf-8')
             self.assertIn('Warm Breeze', localized_home)
-            self.assertIn('offline cached forecast', localized_home)
+            self.assertIn('Offline cached forecast', localized_home)
             self.assertTrue(weather_fetch.called)
 
 
