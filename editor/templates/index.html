@@ -22,15 +22,11 @@
     {% for group in published %}
     <article class="note-row note-group-row">
       <div class="note-copy">
-        <div class="note-heading">
-          <h3>{{ group.title }}</h3>
-          {% if group.has_validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
-        </div>
-        <p class="metadata">{{ group.date or "Sin fecha" }} · {{ group.note_id }}</p>
+        <p class="metadata">{{ group.date or "Sin fecha" }}{% if group.has_validation_error %} · <span class="badge badge-error">Datos inválidos</span>{% endif %}</p>
         <div class="version-group-list">
           {% for version in group.versions %}
           <a class="version-link" href="{{ url_for('edit_note', filename=version.filename) }}" aria-label="Editar {{ version.title }}">
-            <span class="badge">{{ version.language|upper }}</span>
+            <span class="badge version-lang-badge">{{ version.language|upper }}</span>
             <span class="version-link-title">{{ version.title }}</span>
             <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
           </a>
@@ -54,15 +50,11 @@
     {% for group in drafts %}
     <article class="note-row note-group-row">
       <div class="note-copy">
-        <div class="note-heading">
-          <h3>{{ group.title }}</h3>
-          {% if group.has_validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
-        </div>
-        <p class="metadata">{{ group.date or "Sin fecha" }} · {{ group.note_id }}</p>
+        <p class="metadata">{{ group.date or "Sin fecha" }}{% if group.has_validation_error %} · <span class="badge badge-error">Datos inválidos</span>{% endif %}</p>
         <div class="version-group-list">
           {% for version in group.versions %}
           <a class="version-link" href="{{ url_for('edit_note', filename=version.filename) }}" aria-label="Abrir {{ version.title }}">
-            <span class="badge">{{ version.language|upper }}</span>
+            <span class="badge version-lang-badge">{{ version.language|upper }}</span>
             <span class="version-link-title">{{ version.title }}</span>
             <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
           </a>
