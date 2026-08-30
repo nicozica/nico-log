@@ -77,6 +77,7 @@ WEEKDAY_NAMES_EN = [
 ]
 
 SPANISH_TO_ENGLISH: dict[str, str] = {
+    # open-meteo codes (normalized Spanish)
     "despejado": "clear",
     "mayormente despejado": "mostly clear",
     "parcialmente nublado": "partly cloudy",
@@ -97,6 +98,23 @@ SPANISH_TO_ENGLISH: dict[str, str] = {
     "tormenta": "thunderstorm",
     "pronóstico en cache": "offline cached forecast",
     "desconocido": "unknown",
+    # WeatherAPI vendor-specific Spanish condition texts
+    "soleado": "sunny",
+    "cubierto": "overcast",
+    "neblina": "mist",
+    "lluvia ligera": "light rain",
+    "lluvia moderada": "moderate rain",
+    "lluvia fuerte": "heavy rain",
+    "llovizna ligera": "light drizzle",
+    "llovizna moderada": "moderate drizzle",
+    "nevada ligera": "light snow",
+    "nevada moderada": "moderate snow",
+    "nevada intensa": "heavy snow",
+    "aguanieve": "sleet",
+    "tormenta eléctrica": "thunderstorm",
+    "cielo cubierto": "overcast",
+    "aguaceros ligeros": "light rain showers",
+    "chubascos moderados o intensos": "moderate or heavy rain showers",
 }
 
 

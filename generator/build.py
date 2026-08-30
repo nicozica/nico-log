@@ -144,7 +144,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
         'home': {
             'page_title': 'Home',
             'latest_notes_title': 'Latest notes',
-            'latest_notes_subtitle': 'Latest entries from the archive.',
+            'latest_notes_subtitle': '',
             'main_label': 'Main panel',
             'sidebar_label': 'Sidebar',
             'read_link': 'read',

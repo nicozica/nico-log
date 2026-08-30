@@ -287,6 +287,55 @@ class AltTextTests(unittest.TestCase):
         self.assertIn('alt="Album cover"', html)
 
 
+class WeatherConditionVendorTermsTests(unittest.TestCase):
+    """Regression for WeatherAPI-specific Spanish condition terms not in the open-meteo mapping."""
+
+    def test_soleado_maps_to_sunny_for_en(self) -> None:
+        # Production shape: WeatherAPI with lang=es returns "Soleado"
+        data = {
+            'description': 'Soleado',
+            'forecast': [
+                {'date': '2026-08-30', 'description': 'Soleado', 'label': 'Domingo',
+                 'icon': 'sun', 'max_temp_c': 25.0, 'min_temp_c': 15.0, 'temp_range_label': '15° / 25°'},
+            ],
+        }
+        en = weather.localize_weather(data, 'en')
+        self.assertEqual(en['description'], 'sunny')
+        self.assertEqual(en['forecast'][0]['description'], 'sunny')
+
+    def test_soleado_unchanged_for_es(self) -> None:
+        data = {'description': 'Soleado', 'forecast': []}
+        es = weather.localize_weather(data, 'es')
+        self.assertIs(es, data)
+        self.assertEqual(es['description'], 'Soleado')
+
+    def test_cubierto_maps_to_overcast(self) -> None:
+        data = {'description': 'Cubierto', 'forecast': []}
+        en = weather.localize_weather(data, 'en')
+        self.assertEqual(en['description'], 'overcast')
+
+    def test_weather_icon_is_sun_for_sunny(self) -> None:
+        from generator.lib.weather import _icon_for_description
+        self.assertEqual(_icon_for_description('sunny'), 'sun')
+
+
+class LatestNotesSubtitleTests(unittest.TestCase):
+    def test_en_home_no_archive_subtitle(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        dist, _ = _build_dist(tmp.name)
+        html = (dist / 'en' / 'index.html').read_text(encoding='utf-8')
+        tmp.cleanup()
+        self.assertNotIn('Latest entries from the archive', html)
+        self.assertNotIn('section-subtitle', html)
+
+    def test_es_home_no_subtitle(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        dist, _ = _build_dist(tmp.name)
+        html = (dist / 'es' / 'index.html').read_text(encoding='utf-8')
+        tmp.cleanup()
+        self.assertNotIn('section-subtitle', html)
+
+
 class NewsEmptyStateTests(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()

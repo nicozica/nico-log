@@ -125,7 +125,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) calc(var(--space-2) * 1.4);
-  align-items: center;
+  align-items: baseline;
   min-width: 0;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
 }
@@ -142,7 +142,7 @@ button:focus-visible {
 
 .lang-switch {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   font-size: 0.78rem;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   letter-spacing: 0.04em;
@@ -152,8 +152,8 @@ button:focus-visible {
   text-decoration: none;
   color: var(--muted);
   opacity: 0.65;
-  padding-bottom: 0.1rem;
-  border-bottom: 2px solid transparent;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .lang-switch__item--active {
@@ -790,6 +790,7 @@ button.copy-btn {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
+  align-items: baseline;
 }
 
 .webring-title {
