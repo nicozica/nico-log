@@ -160,10 +160,6 @@ button:focus-visible {
   font-weight: 600;
 }
 
-.lang-switch__item:not(.lang-switch__item--active):hover {
-  color: var(--text);
-}
-
 .lang-switch__sep {
   color: var(--border);
 }
