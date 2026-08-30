@@ -1,5 +1,5 @@
 {% if error %}<div class="notice notice-error" role="alert">{{ error }}</div>{% endif %}
-<form class="editor-form" method="post" action="{{ url_for('new_note') if is_new else url_for('edit_note', filename=note.filename) }}" data-editor-form {% if is_new %}data-new-note{% endif %}>
+<form class="editor-form" method="post" action="{{ form_action }}" data-editor-form {% if is_new %}data-new-note{% endif %}>
   <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}" />
   {% if not is_new %}
   <input type="hidden" name="revision" value="{{ revision_value }}" />
@@ -22,17 +22,29 @@
   </div>
   <div class="field-grid">
     <div class="field">
-      <label for="lang">Idioma</label>
-      <select id="lang" name="lang">
-        <option value="es" {% if form.lang == 'es' %}selected{% endif %}>Español</option>
-        <option value="en" {% if form.lang == 'en' %}selected{% endif %}>English</option>
-      </select>
-      <small>Español sigue siendo el original por defecto.</small>
+      <label>Idioma</label>
+      <div class="readonly-value">
+        <strong>{{ language_label }}</strong>
+        <span>{{ language_role }}</span>
+      </div>
+      {% if creation_mode == "original" %}<small>Las nuevas notas arrancan en español.</small>{% endif %}
+      {% if creation_mode == "translation" %}<small>Esta versión EN queda vinculada al mismo original en español.</small>{% endif %}
     </div>
     <div class="field">
-      <label for="note_id">ID compartido</label>
-      <input id="note_id" name="note_id" value="{{ form.note_id }}" maxlength="200" />
-      <small>Usá el mismo ID para vincular versiones ES/EN. Si lo dejás vacío, se deriva del archivo.</small>
+      {% if creation_mode == "translation" and source_note %}
+      <label>Original ES</label>
+      <div class="readonly-value readonly-value-link">
+        <a href="{{ url_for('edit_note', filename=source_note.filename) }}">{{ source_note.metadata.get("title", source_note.filename) }}</a>
+        <span>{{ source_note.filename }}</span>
+      </div>
+      <small>Se reutilizan fecha e etiquetas como punto de partida.</small>
+      {% else %}
+      <label>Modelo editorial</label>
+      <div class="readonly-value">
+        <strong>Una nota</strong>
+        <span>ES original + EN opcional</span>
+      </div>
+      {% endif %}
     </div>
   </div>
   <div class="field field-wide">

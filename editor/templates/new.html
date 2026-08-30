@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Nueva nota{% endblock %}
+{% block title %}{{ "Nueva versión EN" if creation_mode == "translation" else "Nueva nota" }}{% endblock %}
 {% block editor_styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor.css') }}" />
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui-editor-3.2.2/toastui-editor-dark.css') }}" />
@@ -11,11 +11,18 @@
 {% block content %}
 <section class="page-head page-head-editor">
   <div>
+    {% if creation_mode == "translation" and source_note %}
+    <p class="eyebrow">Nueva contraparte EN</p>
+    <h1>Crear versión EN</h1>
+    <p>La versión en inglés arranca como borrador independiente y no modifica el original en español.</p>
+    {% else %}
     <p class="eyebrow">Nuevo borrador</p>
     <h1>Nueva nota</h1>
     <p>La nota se guardará como borrador hasta que decidas publicarla.</p>
+    {% endif %}
   </div>
 </section>
 {% set is_new = true %}
+{% set form_action = url_for('new_english_version', filename=source_note.filename) if creation_mode == 'translation' and source_note else url_for('new_note') %}
 {% include "_form.html" %}
 {% endblock %}

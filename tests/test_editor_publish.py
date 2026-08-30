@@ -187,6 +187,50 @@ class EditorPublishTests(unittest.TestCase):
         self.assertFalse((self.drafts_dir / draft.filename).exists())
         self.assertEqual(self.publisher.calls, 1)
 
+    def test_publishing_english_draft_does_not_modify_spanish_source(self) -> None:
+        shared_note_id = "2026-08-28-cuando-una-herramienta-deja-de-ser-un-experimento"
+        spanish_filename = "2026-08-28-cuando-una-herramienta-deja-de-ser-un-experimento.md"
+        english_filename = "2026-08-28-when-a-tool-stops-being-an-experiment.md"
+        spanish_source = f"""---
+note_id: {shared_note_id}
+lang: es
+title: Cuando una herramienta deja de ser un experimento
+date: 2026-08-28
+tags:
+  - automation
+slug: cuando-una-herramienta-deja-de-ser-un-experimento
+summary: Resumen ES
+---
+
+Texto en espanol.
+"""
+        english_draft_source = f"""---
+note_id: {shared_note_id}
+lang: en
+title: When a Tool Stops Being an Experiment
+date: 2026-08-28
+tags:
+  - automation
+slug: when-a-tool-stops-being-an-experiment
+summary: Summary EN
+---
+
+English draft body.
+"""
+        (self.notes_dir / spanish_filename).write_text(spanish_source, encoding="utf-8")
+        (self.drafts_dir / english_filename).write_text(english_draft_source, encoding="utf-8")
+
+        spanish_before = (self.notes_dir / spanish_filename).read_bytes()
+        draft = self.repository.load_for_edit(english_filename)
+        response = self.publish(english_filename, draft.revision, draft.published_revision)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((self.notes_dir / spanish_filename).read_bytes(), spanish_before)
+        self.assertTrue((self.notes_dir / english_filename).exists())
+        self.assertIn(b"English draft body.", (self.notes_dir / english_filename).read_bytes())
+        self.assertFalse((self.drafts_dir / english_filename).exists())
+        self.assertEqual(self.publisher.calls, 1)
+
     def test_invalid_metadata_blocks_source_and_deploy(self) -> None:
         filename = "2026-08-12-invalid-tags.md"
         draft_path = self.drafts_dir / filename

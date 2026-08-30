@@ -318,8 +318,12 @@ class ContentRepository:
         if len(normalized_slug) > MAX_SLUG_LENGTH or not SLUG_PATTERN.fullmatch(normalized_slug):
             raise ValidationError("El slug no es válido.")
 
-        language = _validated_language(payload.get("lang", _language_from_metadata(base_metadata)))
-        note_id = str(payload.get("note_id", "")).strip() or note_id_from_filename(filename)
+        existing_language = _language_from_metadata(base_metadata)
+        submitted_language = str(payload.get("lang", "")).strip()
+        language = _validated_language(submitted_language or existing_language)
+
+        existing_note_id = _note_id_from_metadata(filename, base_metadata)
+        note_id = str(payload.get("note_id", "")).strip() or existing_note_id
         if len(note_id) > MAX_NOTE_ID_LENGTH or not NOTE_ID_PATTERN.fullmatch(note_id):
             raise ValidationError("El ID compartido no es válido.")
 
@@ -370,6 +374,28 @@ class ContentRepository:
             metadata.pop("note_id", None)
 
         return metadata, body, parsed_date.date().isoformat()
+
+    def _ensure_unique_note_language(self, note_id: str, language: str, exclude_filename: str) -> None:
+        effective_paths: dict[str, Path] = {}
+        for path in self.notes_dir.glob("*.md"):
+            if not path.is_symlink():
+                effective_paths[path.name] = path
+        for path in self.drafts_dir.glob("*.md"):
+            if not path.is_symlink():
+                effective_paths[path.name] = path
+
+        for filename, path in effective_paths.items():
+            if filename == exclude_filename:
+                continue
+            try:
+                _, document = self._read(path)
+                existing_note_id = _note_id_from_metadata(filename, document.metadata)
+                existing_language = _language_from_metadata(document.metadata)
+            except ContentError:
+                existing_note_id = note_id_from_filename(filename)
+                existing_language = DEFAULT_LANGUAGE
+            if existing_note_id == note_id and existing_language == language:
+                raise CollisionError(f"Ya existe una versión {language.upper()} para ese ID compartido: {filename}.")
 
     def _ensure_unique_slug(self, slug: str, exclude_filename: str, language: str) -> None:
         if slug in RESERVED_NOTE_SLUGS[language]:
@@ -449,6 +475,7 @@ class ContentRepository:
                 raise CollisionError("Ya existe una nota o borrador con ese nombre.")
             metadata, body, _ = self._validated_fields(payload, filename, {})
             self._ensure_unique_slug(normalized_slug, filename, language)
+            self._ensure_unique_note_language(_note_id_from_metadata(filename, metadata), language, filename)
             serialized = serialize_document(metadata, body).encode("utf-8")
             self._atomic_write(draft_path, serialized, replace=False)
         return self.load_for_edit(filename)
@@ -488,7 +515,9 @@ class ContentRepository:
             metadata, body, _ = self._validated_fields(payload, filename, document.metadata)
             effective_slug = str(metadata.get("slug") or slug_from_filename(filename))
             effective_language = _language_from_metadata(metadata)
+            effective_note_id = _note_id_from_metadata(filename, metadata)
             self._ensure_unique_slug(effective_slug, filename, effective_language)
+            self._ensure_unique_note_language(effective_note_id, effective_language, filename)
             serialized = serialize_document(metadata, body).encode("utf-8")
             self._atomic_write(draft_path, serialized, replace=True)
 

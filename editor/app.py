@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import os
 import hmac
+import os
 import secrets
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -15,8 +16,10 @@ from .content import (
     CollisionError,
     ContentRepository,
     DraftCleanupError,
+    EditableNote,
     InvalidFilename,
     NoteNotFound,
+    NoteSummary,
     RevisionConflict,
     ValidationError,
 )
@@ -25,6 +28,148 @@ from .publishing import DeploymentResult, SystemdPublisher
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_SITE_URL = "https://www.nico.com.ar"
+
+
+@dataclass(frozen=True)
+class NoteVersionView:
+    filename: str
+    title: str
+    date: str
+    tags: tuple[str, ...]
+    summary: str
+    slug: str
+    language: str
+    note_id: str
+    state_label: str
+    state_tone: str
+    validation_error: str
+    has_draft: bool
+    published_exists: bool
+    is_active: bool = False
+
+
+@dataclass(frozen=True)
+class NoteGroupView:
+    note_id: str
+    title: str
+    date: str
+    tags: tuple[str, ...]
+    versions: tuple[NoteVersionView, ...]
+    has_validation_error: bool
+
+
+def _language_label(language: str) -> str:
+    return "English" if language == "en" else "Español"
+
+
+def _language_role(language: str) -> str:
+    return "Translation" if language == "en" else "Original"
+
+
+def _version_state(has_draft: bool, published_exists: bool) -> tuple[str, str]:
+    if has_draft and published_exists:
+        return "Cambios sin publicar", "draft"
+    if has_draft:
+        return "Borrador", "draft"
+    if published_exists:
+        return "Publicada", "published"
+    return "Sin publicar", "muted"
+
+
+def _version_sort_key(version: NoteVersionView) -> tuple[int, str, str]:
+    order = {"es": 0, "en": 1}
+    return (order.get(version.language, 9), version.date, version.filename)
+
+
+def _group_note_summaries(published: list[NoteSummary], drafts: list[NoteSummary]) -> list[NoteGroupView]:
+    published_by_filename = {note.filename: note for note in published}
+    drafts_by_filename = {note.filename: note for note in drafts}
+
+    versions: list[NoteVersionView] = []
+    for filename in sorted(set(published_by_filename) | set(drafts_by_filename)):
+        draft_note = drafts_by_filename.get(filename)
+        published_note = published_by_filename.get(filename)
+        base = draft_note or published_note
+        if base is None:
+            continue
+        state_label, state_tone = _version_state(draft_note is not None, published_note is not None)
+        versions.append(
+            NoteVersionView(
+                filename=filename,
+                title=base.title,
+                date=base.date,
+                tags=base.tags,
+                summary=base.summary,
+                slug=base.slug,
+                language=base.language,
+                note_id=base.note_id,
+                state_label=state_label,
+                state_tone=state_tone,
+                validation_error=base.validation_error,
+                has_draft=draft_note is not None,
+                published_exists=published_note is not None,
+            )
+        )
+
+    grouped: dict[str, list[NoteVersionView]] = {}
+    for version in versions:
+        grouped.setdefault(version.note_id, []).append(version)
+
+    items: list[NoteGroupView] = []
+    for note_id, grouped_versions in grouped.items():
+        ordered_versions = tuple(sorted(grouped_versions, key=_version_sort_key))
+        spanish = next((version for version in ordered_versions if version.language == "es"), None)
+        primary = spanish or ordered_versions[0]
+        seen_tags: dict[str, None] = {}
+        for version in ordered_versions:
+            for tag in version.tags:
+                seen_tags.setdefault(tag, None)
+        items.append(
+            NoteGroupView(
+                note_id=note_id,
+                title=primary.title,
+                date=primary.date,
+                tags=tuple(seen_tags),
+                versions=ordered_versions,
+                has_validation_error=any(version.validation_error for version in ordered_versions),
+            )
+        )
+
+    items.sort(key=lambda group: (group.date, group.title.lower(), group.note_id), reverse=True)
+    return items
+
+
+def _group_matches(group: NoteGroupView, query: str) -> bool:
+    haystack_parts = [group.title, group.note_id, *group.tags]
+    for version in group.versions:
+        haystack_parts.extend(
+            [
+                version.title,
+                version.filename,
+                version.slug,
+                version.language,
+                version.note_id,
+                version.summary,
+                *version.tags,
+            ]
+        )
+    haystack = " ".join(part for part in haystack_parts if part).lower()
+    return query in haystack
+
+
+def _groups_for_section(groups: list[NoteGroupView], *, include: str) -> list[NoteGroupView]:
+    if include == "published":
+        return [group for group in groups if any(version.published_exists for version in group.versions)]
+    if include == "drafts":
+        return [group for group in groups if any(version.has_draft for version in group.versions)]
+    raise ValueError(f"Unknown section: {include}")
+
+
+def _find_group(groups: list[NoteGroupView], filename: str) -> NoteGroupView | None:
+    for group in groups:
+        if any(version.filename == filename for version in group.versions):
+            return group
+    return None
 
 
 def create_app(
@@ -106,6 +251,43 @@ def create_app(
             "body": request.form.get("body", ""),
         }
 
+    def group_views() -> list[NoteGroupView]:
+        return _group_note_summaries(repository.list_published(), repository.list_drafts())
+
+    def language_display(form: dict[str, str]) -> dict[str, str]:
+        language = form.get("lang", "") or "es"
+        return {
+            "language_label": _language_label(language),
+            "language_role": _language_role(language),
+        }
+
+    def with_fixed_metadata(form: dict[str, str], *, language: str, note_id: str) -> dict[str, str]:
+        enriched = dict(form)
+        enriched["lang"] = language
+        enriched["note_id"] = note_id
+        return enriched
+
+    def edit_view_context(note: EditableNote, form: dict[str, str]) -> dict[str, Any]:
+        groups = group_views()
+        group = _find_group(groups, note.filename)
+        versions: tuple[NoteVersionView, ...] = ()
+        create_english_url = ""
+        if group is not None:
+            versions = tuple(
+                NoteVersionView(
+                    **{**version.__dict__, "is_active": version.filename == note.filename},
+                )
+                for version in group.versions
+            )
+            active = next((version for version in versions if version.is_active), None)
+            if active is not None and active.language == "es" and all(version.language != "en" for version in versions):
+                create_english_url = url_for("new_english_version", filename=note.filename)
+        return {
+            "note_versions": versions,
+            "create_english_url": create_english_url,
+            **language_display(form),
+        }
+
     def complete_publication(
         filename: str,
         draft_revision: str,
@@ -134,15 +316,11 @@ def create_app(
     @app.get("/")
     def index() -> str:
         query = request.args.get("q", "").strip().lower()
-        published = repository.list_published()
-        drafts = repository.list_drafts()
+        groups = group_views()
         if query:
-            def matches(note: Any) -> bool:
-                haystack = " ".join((note.title, note.filename, note.slug, note.language, note.note_id, *note.tags)).lower()
-                return query in haystack
-
-            published = [note for note in published if matches(note)]
-            drafts = [note for note in drafts if matches(note)]
+            groups = [group for group in groups if _group_matches(group, query)]
+        published = _groups_for_section(groups, include="published")
+        drafts = _groups_for_section(groups, include="drafts")
         return render_template("index.html", published=published, drafts=drafts, query=query)
 
     @app.route("/notes/new", methods=["GET", "POST"])
@@ -160,7 +338,7 @@ def create_app(
         error = ""
         status = 200
         if request.method == "POST":
-            form = submitted_form()
+            form = with_fixed_metadata(submitted_form(), language="es", note_id="")
             action = request.form.get("action", "save")
             try:
                 if action not in {"save", "publish"}:
@@ -176,7 +354,70 @@ def create_app(
                 status = 400
             else:
                 return redirect(url_for("edit_note", filename=note.filename, saved="created"))
-        return render_template("new.html", form=form, error=error), status
+        return render_template(
+            "new.html",
+            form=form,
+            error=error,
+            creation_mode="original",
+            source_note=None,
+            **language_display(form),
+        ), status
+
+    @app.route("/notes/<filename>/translations/en/new", methods=["GET", "POST"])
+    def new_english_version(filename: str) -> str | tuple[str, int]:
+        try:
+            source_note = repository.load_for_edit(filename)
+        except (InvalidFilename, NoteNotFound):
+            abort(404)
+
+        source_form = source_note.form_values()
+        if source_form["lang"] != "es":
+            abort(404)
+
+        source_group = _find_group(group_views(), source_note.filename)
+        if source_group is not None and any(version.language == "en" for version in source_group.versions):
+            return render_template(
+                "error.html",
+                message="La versión EN de esta nota ya existe.",
+            ), 409
+
+        form = {
+            "title": "",
+            "date": source_form["date"],
+            "tags": source_form["tags"],
+            "summary": "",
+            "slug": "",
+            "lang": "en",
+            "note_id": source_form["note_id"],
+            "body": "",
+        }
+        error = ""
+        status = 200
+        if request.method == "POST":
+            form = with_fixed_metadata(submitted_form(), language="en", note_id=source_form["note_id"])
+            action = request.form.get("action", "save")
+            try:
+                if action not in {"save", "publish"}:
+                    raise ValidationError("La acción editorial no es válida.")
+                note = repository.create_draft(form)
+                if action == "publish":
+                    return complete_publication(note.filename, note.revision, note.published_revision)
+            except CollisionError as exc:
+                error = str(exc)
+                status = 409
+            except ValidationError as exc:
+                error = str(exc)
+                status = 400
+            else:
+                return redirect(url_for("edit_note", filename=note.filename, saved="created"))
+        return render_template(
+            "new.html",
+            form=form,
+            error=error,
+            creation_mode="translation",
+            source_note=source_note,
+            **language_display(form),
+        ), status
 
     @app.route("/notes/<filename>/edit", methods=["GET", "POST"])
     def edit_note(filename: str) -> str | tuple[str, int]:
@@ -192,7 +433,7 @@ def create_app(
         error = ""
         status = 200
         if request.method == "POST":
-            form = submitted_form()
+            form = with_fixed_metadata(submitted_form(), language=note.form_values()["lang"], note_id=note.form_values()["note_id"])
             action = request.form.get("action", "save")
             revision_value = request.form.get("revision", "")
             published_revision_value = request.form.get("published_revision", "")
@@ -202,6 +443,7 @@ def create_app(
                 saved_note = repository.save_draft(filename, form, revision_value)
                 render_note = saved_note
                 revision_value = saved_note.revision
+                form = saved_note.form_values()
                 if action == "publish":
                     return complete_publication(
                         saved_note.filename,
@@ -228,6 +470,7 @@ def create_app(
             saved=request.args.get("saved", ""),
             revision_value=revision_value,
             publish_published_revision=published_revision_value,
+            **edit_view_context(render_note, form),
         ), status
 
     @app.get("/notes/<filename>/preview")
@@ -285,7 +528,7 @@ def create_app(
             abort(404)
 
         try:
-            slug = repository.publish_draft(
+            repository.publish_draft(
                 filename,
                 request.form.get("draft_revision", ""),
                 request.form.get("published_revision", ""),
@@ -323,6 +566,7 @@ def create_app(
             revision_value=note.revision,
             publish_draft_revision=request.form.get("draft_revision", ""),
             publish_published_revision=request.form.get("published_revision", ""),
+            **edit_view_context(note, note.form_values()),
         ), status
 
     @app.post("/notes/<filename>/deploy")
@@ -357,8 +601,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(
-        host=os.environ.get("NICO_EDITOR_HOST", "127.0.0.1"),
-        port=int(os.environ.get("NICO_EDITOR_PORT", "5001")),
-        debug=False,
-    )
+    app.run(debug=True)

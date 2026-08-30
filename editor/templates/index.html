@@ -19,20 +19,26 @@
     <span>{{ published|length }}</span>
   </div>
   <div class="note-list">
-    {% for note in published %}
-    <a class="note-row" href="{{ url_for('edit_note', filename=note.filename) }}" aria-label="Editar {{ note.title }}">
+    {% for group in published %}
+    <article class="note-row note-group-row">
       <div class="note-copy">
         <div class="note-heading">
-          <h3>{{ note.title }}</h3>
-          <span class="badge">{{ note.language|upper }}</span>
-          {% if note.has_draft %}<span class="badge badge-draft">Borrador</span>{% endif %}
-          {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
+          <h3>{{ group.title }}</h3>
+          {% if group.has_validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
-        <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
-        <p class="metadata">ID compartido: {{ note.note_id }}</p>
-        {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
+        <p class="metadata">{{ group.date or "Sin fecha" }} · {{ group.note_id }}</p>
+        <div class="version-group-list">
+          {% for version in group.versions %}
+          <a class="version-link" href="{{ url_for('edit_note', filename=version.filename) }}" aria-label="Editar {{ version.title }}">
+            <span class="badge">{{ version.language|upper }}</span>
+            <span class="version-link-title">{{ version.title }}</span>
+            <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% if group.tags %}<p class="tags">{{ group.tags|join(" · ") }}</p>{% endif %}
       </div>
-    </a>
+    </article>
     {% else %}
     <p class="empty">No hay notas publicadas para este filtro.</p>
     {% endfor %}
@@ -45,20 +51,26 @@
     <span>{{ drafts|length }}</span>
   </div>
   <div class="note-list">
-    {% for note in drafts %}
-    <a class="note-row" href="{{ url_for('edit_note', filename=note.filename) }}" aria-label="Abrir {{ note.title }}">
+    {% for group in drafts %}
+    <article class="note-row note-group-row">
       <div class="note-copy">
         <div class="note-heading">
-          <h3>{{ note.title }}</h3>
-          <span class="badge">{{ note.language|upper }}</span>
-          <span class="badge badge-draft">{{ "Cambios sin publicar" if note.published_exists else "Nueva" }}</span>
-          {% if note.validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
+          <h3>{{ group.title }}</h3>
+          {% if group.has_validation_error %}<span class="badge badge-error">Datos inválidos</span>{% endif %}
         </div>
-        <p class="metadata">{{ note.date or "Sin fecha" }} · {{ note.filename }}</p>
-        <p class="metadata">ID compartido: {{ note.note_id }}</p>
-        {% if note.tags %}<p class="tags">{{ note.tags|join(" · ") }}</p>{% endif %}
+        <p class="metadata">{{ group.date or "Sin fecha" }} · {{ group.note_id }}</p>
+        <div class="version-group-list">
+          {% for version in group.versions %}
+          <a class="version-link" href="{{ url_for('edit_note', filename=version.filename) }}" aria-label="Abrir {{ version.title }}">
+            <span class="badge">{{ version.language|upper }}</span>
+            <span class="version-link-title">{{ version.title }}</span>
+            <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% if group.tags %}<p class="tags">{{ group.tags|join(" · ") }}</p>{% endif %}
       </div>
-    </a>
+    </article>
     {% else %}
     <p class="empty">No hay borradores.</p>
     {% endfor %}

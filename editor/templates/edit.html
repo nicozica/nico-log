@@ -24,7 +24,36 @@
   </div>
   {% endif %}
 </section>
+{% if note_versions %}
+<section class="version-panel">
+  <div class="version-switch" aria-label="Versiones de la nota">
+    {% for version in note_versions %}
+      {% if version.is_active %}
+      <span class="version-pill version-pill-active">{{ version.language|upper }} {{ _language_label if false else '' }}{{ "Original" if version.language == 'es' else 'English' }}</span>
+      {% else %}
+      <a class="version-pill" href="{{ url_for('edit_note', filename=version.filename) }}">{{ version.language|upper }} {{ "Original" if version.language == 'es' else 'English' }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="version-list-inline">
+    {% for version in note_versions %}
+    <div class="version-line{% if version.is_active %} version-line-active{% endif %}">
+      <span class="badge">{{ version.language|upper }}</span>
+      <span>{{ version.title }}</span>
+      <span class="version-status version-status-{{ version.state_tone }}">{{ version.state_label }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% if create_english_url %}
+  <div class="version-actions">
+    <a class="button" href="{{ create_english_url }}">Crear versión EN</a>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
 {% if saved %}<div class="notice notice-success">Borrador guardado correctamente.</div>{% endif %}
 {% set is_new = false %}
+{% set creation_mode = "edit" %}
+{% set form_action = url_for('edit_note', filename=note.filename) %}
 {% include "_form.html" %}
 {% endblock %}
