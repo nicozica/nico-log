@@ -162,13 +162,13 @@ input:focus, textarea:focus { border-color: var(--accent); }
 .version-group-list { display: grid; gap: 0; margin-top: 0.5rem; }
 .version-group-list .version-link { padding: 0.65rem 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; }
 .version-group-list .version-link:first-child { border-top: 0; }
-.version-group-list .version-link:hover { background: transparent; text-decoration: underline; }
+.version-group-list .version-link:hover { background: transparent; opacity: 0.75; }
 /* Edit page: version-list-inline rows also full-width, divided */
 .version-list-inline { display: grid; gap: 0; }
 .version-line, .version-line-link { padding: 0.8rem 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; border-top: 1px solid var(--line); background: transparent; text-decoration: none; }
 .version-list-inline .version-line:first-child,
 .version-list-inline .version-line-link:first-child { border-top: 0; }
-.version-line-link:hover .version-link-title { text-decoration: underline; }
+.version-line-link:hover { opacity: 0.75; }
 .version-link { padding: 0.65rem 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; background: transparent; text-decoration: none; }
 .version-link-title { font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .version-lang-badge { border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 0.72rem; flex-shrink: 0; }
