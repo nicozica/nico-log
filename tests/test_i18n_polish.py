@@ -287,5 +287,45 @@ class AltTextTests(unittest.TestCase):
         self.assertIn('alt="Album cover"', html)
 
 
+class NewsEmptyStateTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self._dist, _ = _build_dist(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_en_news_page_english_empty_state(self) -> None:
+        html = (self._dist / 'en' / 'news' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('No fresh news right now.', html)
+        self.assertNotIn('No hay noticias', html)
+
+    def test_es_news_page_spanish_empty_state(self) -> None:
+        html = (self._dist / 'es' / 'noticias' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('No hay noticias frescas por ahora.', html)
+
+    def test_en_home_sidebar_english_empty_state(self) -> None:
+        html = (self._dist / 'en' / 'index.html').read_text(encoding='utf-8')
+        self.assertNotIn('No hay noticias', html)
+
+
+class PaginationLabelTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self._dist, _ = _build_dist(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_es_notes_pagination_in_spanish(self) -> None:
+        html = (self._dist / 'es' / 'notas' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('aria-label="Paginación de notas"', html)
+        self.assertNotIn('aria-label="Notes pagination"', html)
+
+    def test_en_notes_pagination_in_english(self) -> None:
+        html = (self._dist / 'en' / 'notes' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('aria-label="Notes pagination"', html)
+
+
 if __name__ == '__main__':
     unittest.main()

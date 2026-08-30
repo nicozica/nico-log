@@ -146,12 +146,14 @@ button:focus-visible {
   font-size: 0.78rem;
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   letter-spacing: 0.04em;
-  opacity: 0.7;
 }
 
 .lang-switch__item {
   text-decoration: none;
   color: var(--muted);
+  opacity: 0.65;
+  padding-bottom: 0.1rem;
+  border-bottom: 2px solid transparent;
 }
 
 .lang-switch__item--active {

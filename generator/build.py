@@ -73,6 +73,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'newer': 'Más nuevas',
             'older': 'Más antiguas',
             'empty': 'Todavía no hay notas publicadas en esta versión.',
+            'pagination_label': 'Paginación de notas',
         },
         'note': {
             'translation_link': 'English version →',
@@ -84,6 +85,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'page_title': 'Noticias',
             'intro': 'Entradas frescas combinadas desde la lista RSS configurada.',
             'description': 'Noticias y enlaces recientes curados desde feeds externos.',
+            'empty': 'No hay noticias frescas por ahora.',
         },
         'about': {
             'page_title': 'Acerca',
@@ -171,6 +173,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'newer': 'Newer',
             'older': 'Older',
             'empty': 'No English notes have been published yet.',
+            'pagination_label': 'Notes pagination',
         },
         'note': {
             'translation_link': 'Versión en español →',
@@ -182,6 +185,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'page_title': 'News',
             'intro': 'Fresh links blended from the configured RSS list.',
             'description': 'External news and links collected from the configured feeds.',
+            'empty': 'No fresh news right now.',
         },
         'about': {
             'page_title': 'About',

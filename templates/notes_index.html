@@ -8,7 +8,7 @@
 </section>
 
 {% if pagination.total_pages > 1 %}
-<nav class="pagination pagination-top" aria-label="Notes pagination">
+<nav class="pagination pagination-top" aria-label="{{ locale.notes.pagination_label }}">
   {% if pagination.has_prev %}
     <a href="{{ pagination.prev_url }}">{{ locale.notes.newer }}</a>
   {% else %}
@@ -47,7 +47,7 @@
 </div>
 
 {% if pagination.total_pages > 1 %}
-<nav class="pagination" aria-label="Notes pagination">
+<nav class="pagination" aria-label="{{ locale.notes.pagination_label }}">
   {% if pagination.has_prev %}
     <a href="{{ pagination.prev_url }}">{{ locale.notes.newer }}</a>
   {% else %}
