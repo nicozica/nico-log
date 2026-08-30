@@ -25,7 +25,7 @@ If the internet comes back during that window, nothing happens.
 
 If it is still down, they bring up the emergency connection, change the necessary routes, and some services start going out over 4G. When the fiber recovers in a stable way, everything returns automatically to its original state.
 
-Those 15 seconds ended up mattering more than it seemed. One night the ISP renewed the public IP and caused a small outage. One of the servers detected it, waited out the confirmation window, and logged:
+Those 15 seconds ended up mattering more than it seemed. Early one morning the ISP renewed the public IP and caused a small outage. One of the servers detected it, waited out the confirmation window, and logged:
 
 `Fiber ISP health-check failed; confirming in 15 seconds.`
 `Fiber ISP recovered during confirmation window.`
@@ -50,4 +50,4 @@ The system is still small. I do not want to run streaming or heavy services over
 
 The experiment ended up being much more entertaining than I expected. It started as “put a Wi-Fi antenna on it in case the internet goes down” and ended up involving policy routing, namespaces, systemd, recycled dongles, and a lot of time moving USB adapters from one port to another.
 
-When I was a kid, I used to mess around with wire antennas on the apartment terrace, trying to catch signals. A few decades later I am basically still doing the same thing. Only now there is Proxmox in the middle.
+When I was a kid, I used to mess around with wire antennas on the terrace at home, trying to catch signals. A few decades later I am basically still doing the same thing. Only now there is Proxmox in the middle.

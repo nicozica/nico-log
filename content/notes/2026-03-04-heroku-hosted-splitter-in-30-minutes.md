@@ -33,4 +33,4 @@ Codex not only generated the app (Node/Express), it also pushed it to GitHub and
 
 ### Next step
 
-Add a `report.txt` in case there were warnings detected (for example markers with no content).
+Add a `report.txt` if any warnings show up (for example, markers with no content).

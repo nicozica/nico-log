@@ -43,6 +43,6 @@ The funny thing is that each individual decision in the process probably makes s
 
 In a few minutes I had to open an app I never use, discover that it needed an update, find a way around the login, navigate an interface designed to promote the most expensive options, interpret an unusual payment mechanism, and repeat the whole order because a reader could not recognize a code.
 
-Self-service should remove steps and make an everyday task faster. When it is poorly designed, it just shifts the company's work onto the customer and turns a simple operation into a patience test.
+Self-service should remove steps and make an everyday task faster. When it is poorly designed, it just shifts the company's work onto the customer and turns a simple operation into a test of patience.
 
-I had gone in to buy a burger. The badly used technology did everything it could to stop me.
+I had gone in to buy a burger. Badly designed technology did everything it could to stop me.

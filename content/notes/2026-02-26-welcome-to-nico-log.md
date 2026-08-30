@@ -11,4 +11,4 @@ slug: welcome-to-nico-log
 
 Slackware's site is known in the Linux world for running on a Pentium III, 600 MHz, with 512 megabytes of RAM.
 
-After a few rounds with GitHub Copilot and Codex, this is my first test post for publishing a light note.
+After a few rounds with GitHub Copilot and Codex, this is my first test for publishing a light note.

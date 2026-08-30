@@ -32,4 +32,4 @@ This week the small milestone that justified writing all this happened: **we lau
 It was no longer a test, a dry run, or specially prepared data for building the tool. There was real content, real schedules, and real changes that actually had to happen.
 
 And it worked. Maybe what I like most about this project is that it did not start from a giant specification or the idea of building a “platform”.
-It started by looking at a pretty tedious task and thinking: **this should be possible to do better.** The rest appeared question by question. And there are probably still quite a few questions left.
+It started by looking at a pretty tedious task and thinking: **this should be doable better.** The rest appeared question by question. And there are probably still quite a few questions left.

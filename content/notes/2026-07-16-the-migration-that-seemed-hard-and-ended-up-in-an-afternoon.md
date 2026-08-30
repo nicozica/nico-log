@@ -18,7 +18,7 @@ summary: Two internal tools, a PostgreSQL database, a worker running in another 
   end, breaking the work into small steps made everything much easier than expected.
 ---
 
-On Heroku I had two internal tools mounted to solve pretty specific things. They worked, did not give me headaches, and were already part of the day-to-day workflow, but the monthly cost was hard to justify for how small they were.
+On Heroku I had two internal tools set up to solve pretty specific things. They worked, did not give me headaches, and were already part of the day-to-day workflow, but the monthly cost was hard to justify for how small they were.
 
 The thing is that one of them had grown far more than I had planned at the time. It was no longer just a Node interface in a dyno: it had a PostgreSQL database, import and export processes, a delivery queue, and a worker running separately in another VM, checking every so often whether there was pending work.
 
@@ -40,7 +40,7 @@ The second tool was much more straightforward. No database, no secrets, no exter
 
 Then I moved its existing domain to the same Cloudflare Tunnel. For the person using it nothing changed: the URL stayed the same and the app kept working exactly as before, only now it ran in a container on the new VM instead of on Heroku.
 
-Once I confirmed both responded properly over HTTPS and that the main flows worked, I deleted the Heroku apps and their resources. The part I respected the most ended up being the most mechanical: confirm versions, copy, bring up in parallel, test, and only then cut over.
+Once I confirmed both responded properly over HTTPS and that the main flows worked, I deleted the Heroku apps and their resources. The part I was most nervous about ended up being the most mechanical: confirm versions, copy, bring up in parallel, test, and only then cut over.
 
 I think it went smoothly because I never tried to solve everything at once. Instead of thinking of it as a giant infrastructure move, I broke it into small checkpoints where I could verify each step before continuing.
 

@@ -13,7 +13,7 @@ summary: How I set up a simple Icecast fanout to serve Blur FM in Europe with lo
   latency while keeping now playing intact.
 ---
 
-To make Blur FM work better, the idea was: **four qualities from SAM** (320, 128, 64 and 32 kbps), **Icecast in Argentina as the base**, **a relay in Europe** to spread the demand, and **Cloudflare** so the public URLs point to the most convenient endpoint (AR or EU).
+To make Blur FM work better, the idea was: **four qualities from SAM** (320, 128, 64 and 32 kbps), **Icecast in Argentina as the base**, **a relay in Europe** to share the load, and **Cloudflare** so the public URLs point to the most convenient endpoint (AR or EU).
 
 In practice this ends up as a *fanout*: the “mother” Icecast publishes the streams, and one (or more) Icecast instances in Europe **join as a relay** and serve those same qualities locally.
 

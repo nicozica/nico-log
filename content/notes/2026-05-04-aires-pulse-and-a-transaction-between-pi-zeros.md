@@ -43,7 +43,7 @@ I had to decide what to show, how to show it, and where. The running-conditions 
 
 In parallel, [run.nico.ar](https://run.nico.ar "run.nico.ar") also got a split between the editorial "Next run" and the practical "Workout": one explains what makes sense to do and why, the other turns it into blocks that can be loaded manually into Garmin Connect. It is not a real integration. It is something simpler and more honest: a clear guide.
 
-In the end, what was interesting was not just that [Aires Pulse](https://aires.nico.ar "Aires Pulse") came online, or that [run.nico.ar](https://run.nico.ar "run.nico.ar") could consume live data. What was interesting was seeing how several very small machines ended up doing very defined jobs.
+In the end, what was interesting was not just that [Aires Pulse](https://aires.nico.ar "Aires Pulse") came online, or that [run.nico.ar](https://run.nico.ar "run.nico.ar") could consume live data. What was interesting was seeing how several very small machines ended up with well-defined roles.
 
 Pipeta observes. Pipita publishes. Pipa interprets.
 

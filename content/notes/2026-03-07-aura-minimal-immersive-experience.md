@@ -61,16 +61,16 @@ The nice part was setting it up with the same overall approach I had already bee
 
 ### MVP with minimum effort
 
-The project started as a low-fi mockup in Excalidraw and quickly became a real URL. It turned into a product fairly fast.
+The project started as a low-fi mockup in Excalidraw and quickly made it to a real URL. It turned into a product fairly fast.
 
 It is not fully done, not even close, but it already has the important part: its own base, a clear identity, and deploy sorted out.
 
 ### Next step
 
-Polish the player calmly:
+Polish the player without rushing:
 
-- More robust real metadata
-- A better-resolved dynamic background
+- More robust live metadata
+- A better dynamic background
 - Recently played panel
 - Fine-tuning for mobile and TV
 

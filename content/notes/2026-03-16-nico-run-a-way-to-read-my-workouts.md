@@ -12,7 +12,7 @@ tags:
 - argensonix-labs
 slug: nico-run-a-way-to-read-my-workouts
 summary: 'After building Pacer, I took one more step and launched nico://run: a lightweight
-  portal that takes those data, organizes them better, and turns them into a clearer
+  portal that takes that data, organizes it better, and turns it into a clearer
   reading of the last session, the week, and what might come next.'
 ---
 
@@ -24,11 +24,11 @@ Pacer solved the data-prep part pretty well. It pulls activities from Strava, su
 
 ### What nico://run is
 
-**nico://run** is basically a reading layer on top of Pacer. It lives at [run.nico.ar](https://run.nico.ar/), and what it does is take the snapshot I already prepare on the Pacer side and turn it into something more legible: the latest run as the main block, the next workout as a short suggestion, a weekly summary, and a few links to keep reading interesting things about running and wellness. The logic is pretty simple at heart: **Pacer prepares, nico://run orders, and ChatGPT interprets**. Each piece does one distinct job, and for now that has worked better than trying to cram everything into one place.
+**nico://run** is basically a reading layer on top of Pacer. It lives at [run.nico.ar](https://run.nico.ar/), and what it does is take the snapshot I already prepare on the Pacer side and turn it into something more legible: the latest run as the main block, the next workout as a short suggestion, a weekly summary, and a few links to keep reading interesting things about running and wellness. The logic is pretty simple at heart: **Pacer prepares, nico://run organizes, and ChatGPT interprets**. Each piece does one distinct job, and for now that has worked better than trying to cram everything into one place.
 
 ### How it runs
 
-The idea is still to keep it light. It is built as a static site, works with local data, and avoids unnecessary complexity. It is also meant to run comfortably even on small hardware, which is a big part of the project’s appeal. I really like the idea of showing something useful without needing exaggerated infrastructure to solve a fairly simple problem.
+The idea is still to keep it light. It is built as a static site, works with local data, and avoids unnecessary complexity. It is also meant to run comfortably even on small hardware, which is a big part of the project’s appeal. I really like the idea of showing something useful without needing oversized infrastructure to solve a fairly simple problem.
 
 ### What it already does
 
