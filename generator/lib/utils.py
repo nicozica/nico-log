@@ -108,6 +108,14 @@ def format_date(dt: datetime) -> str:
     return to_datetime(dt).strftime("%d/%m/%Y")
 
 
+def format_date_en(dt: datetime) -> str:
+    return to_datetime(dt).strftime("%-d %b %Y")
+
+
+def format_datetime_en(dt: datetime) -> str:
+    return to_datetime(dt).strftime("%-d %b %Y %H:%M")
+
+
 def slugify(value: str) -> str:
     lowered = value.strip().lower()
     lowered = re.sub(r"[^a-z0-9\s-]", "", lowered)

@@ -51,6 +51,8 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'more_notes': 'Ver más notas',
             'weather_title': 'Clima',
             'weather_condition_sr': 'Condición del clima:',
+            'weather_humidity': 'Humedad',
+            'weather_wind': 'Viento',
             'forecast_label': 'Pronóstico breve',
             'now_title': 'Ahora sonando',
             'track_label': 'Tema:',
@@ -58,6 +60,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'album_label': 'Álbum:',
             'year_label': 'Año:',
             'unavailable': 'No disponible',
+            'album_cover_alt': 'Portada del álbum',
             'open_stream': 'Abrir en Blur FM ↗',
             'news_title': 'Noticias',
             'news_more': 'Ver todas',
@@ -109,6 +112,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'title': 'nico://log · notas en español',
             'description': 'Notas en español de nico://log.',
         },
+        'tags': {},
     },
     'en': {
         'code': 'en',
@@ -145,6 +149,8 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'more_notes': 'More notes',
             'weather_title': 'Weather',
             'weather_condition_sr': 'Weather condition:',
+            'weather_humidity': 'Humidity',
+            'weather_wind': 'Wind',
             'forecast_label': 'Short forecast',
             'now_title': 'Now playing',
             'track_label': 'Track:',
@@ -152,6 +158,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'album_label': 'Album:',
             'year_label': 'Year:',
             'unavailable': 'Unavailable',
+            'album_cover_alt': 'Album cover',
             'open_stream': 'Open on Blur FM ↗',
             'news_title': 'News',
             'news_more': 'See all',
@@ -203,6 +210,13 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
             'json_label': 'JSON Feed',
             'title': 'nico://log · notes in English',
             'description': 'English notes and translations from nico://log.',
+        },
+        'tags': {
+            'música': 'music',
+            'diseño': 'design',
+            'autogestión': 'self-hosting',
+            'proyectos-personales': 'personal-projects',
+            'low tech': 'low-tech',
         },
     },
 }
@@ -324,7 +338,18 @@ def _note_alternates(note: dict[str, Any]) -> list[dict[str, str]]:
                 'href': note['translation']['path'],
             }
         )
+    # Always ES before EN for consistent selector ordering
+    alternates.sort(key=lambda a: (0 if a['hreflang'] == 'es' else 1))
     return alternates
+
+
+def _localize_footer_links(links: list[dict[str, str]], language: str) -> list[dict[str, str]]:
+    if language == 'es':
+        return [
+            {**link, 'label': link['label'].replace('(English blog)', '(blog en inglés)')}
+            for link in links
+        ]
+    return links
 
 
 def _paired_section_alternates(es_path: str, en_path: str) -> list[dict[str, str]]:
@@ -405,6 +430,7 @@ def main() -> None:
     notes_settings = config.get('notes', {})
     news_settings = config.get('news', {})
     tiny_lines = utils.load_lines(content_dir / 'tiny.txt')
+    tiny_en_lines = utils.load_lines(content_dir / 'tiny_en.txt')
 
     if not isinstance(site, dict):
         site = {}
@@ -479,6 +505,7 @@ def main() -> None:
     build_info = {
         'updated_iso': built_at.isoformat(),
         'updated_label': utils.format_datetime(built_at),
+        'updated_label_en': utils.format_datetime_en(built_at),
     }
     now_source_url = str(now_playing_settings.get('source_url', '')).strip()
     now_stream_url = str(now_playing_settings.get('stream_url', '')).strip() or 'https://www.blurfm.com/'
@@ -564,6 +591,10 @@ def main() -> None:
         localized_site = _localized_site(site, language)
         localized_notes = notes_by_language[language]
         localized_feed_links = _localized_feed_links(language, locale)
+        localized_weather = weather.localize_weather(weather_data, language)
+        localized_footer = {'links': _localize_footer_links(normalized_footer_links, language)}
+        localized_tiny = utils.pick_tiny_thing(tiny_en_lines if language == 'en' else tiny_lines, built_at)
+        lang_base_context = {**base_context, 'weather': localized_weather, 'footer': localized_footer}
         latest_notes_limit = _to_positive_int(home_settings.get('latest_notes_limit', 4), default=4)
         latest_notes = localized_notes[:latest_notes_limit]
 
@@ -572,7 +603,7 @@ def main() -> None:
             'index.html',
             route_destination(output_dir, locale['nav']['home_path']),
             _page_context(
-                base_context,
+                lang_base_context,
                 site=localized_site,
                 locale=locale,
                 page_title=locale['home']['page_title'],
@@ -592,7 +623,7 @@ def main() -> None:
                     'latest_notes_subtitle': home_settings.get('latest_notes_subtitle', locale['home']['latest_notes_subtitle'])
                     if language == 'es'
                     else locale['home']['latest_notes_subtitle'],
-                    'tiny_thing': tiny_thing,
+                    'tiny_thing': localized_tiny,
                 },
             ),
         )
@@ -643,7 +674,7 @@ def main() -> None:
                 'notes_index.html',
                 route_destination(output_dir, current_path),
                 _page_context(
-                    base_context,
+                    lang_base_context,
                     site=localized_site,
                     locale=locale,
                     page_title=locale['notes']['page_title'],
@@ -668,7 +699,7 @@ def main() -> None:
                 'note_detail.html',
                 route_destination(output_dir, note['path']),
                 _page_context(
-                    base_context,
+                    lang_base_context,
                     site=localized_site,
                     locale=locale,
                     page_title=note['title'],
@@ -686,7 +717,7 @@ def main() -> None:
             'links_index.html',
             route_destination(output_dir, locale['nav']['news_path']),
             _page_context(
-                base_context,
+                lang_base_context,
                 site=localized_site,
                 locale=locale,
                 page_title=locale['news']['page_title'],
@@ -704,7 +735,7 @@ def main() -> None:
             'about_index.html',
             route_destination(output_dir, locale['nav']['about_path']),
             _page_context(
-                base_context,
+                lang_base_context,
                 site=localized_site,
                 locale=locale,
                 page_title=locale['about']['page_title'],

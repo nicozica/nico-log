@@ -14,12 +14,12 @@
       <article class="card note-card">
         <header>
           <h3 class="card-title"><a href="{{ note.path }}">{{ note.title }}</a></h3>
-          <p class="meta">{{ note.date_label }}</p>
+          <p class="meta">{{ note.date_label_en if locale.code == 'en' else note.date_label }}</p>
         </header>
         <p>{{ note.excerpt_html | safe }}</p>
         <p class="tags">
           {% for tag in note.tags %}
-            <span class="pill">{{ tag }}</span>
+            <span class="pill">{{ locale.tags[tag] if locale.tags is defined and tag in locale.tags else tag }}</span>
           {% endfor %}
         </p>
         <a class="read-link" href="{{ note.path }}">{{ locale.home.read_link }}</a>
@@ -44,7 +44,7 @@
         <span class="sr-only">{{ locale.home.weather_condition_sr }}</span>
         <span>{{ weather.description }}</span>
       </p>
-      <p class="meta">Humedad {{ weather.humidity_label }} · Viento {{ weather.wind_label }}</p>
+      <p class="meta">{{ locale.home.weather_humidity }} {{ weather.humidity_label }} · {{ locale.home.weather_wind }} {{ weather.wind_label }}</p>
       {% if weather.forecast %}
       <div class="weather-forecast" aria-label="{{ locale.home.forecast_label }}">
         <ul class="forecast-list">
@@ -70,7 +70,7 @@
           class="np-cover"
           data-now-cover
           src="/assets/img/blurfm-cover-default.svg"
-          alt="Album cover"
+          alt="{{ locale.home.album_cover_alt }}"
           width="64"
           height="64"
           loading="lazy"

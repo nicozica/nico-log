@@ -66,6 +66,38 @@ WEEKDAY_NAMES = [
     "Sábado",
     "Domingo",
 ]
+WEEKDAY_NAMES_EN = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+]
+
+SPANISH_TO_ENGLISH: dict[str, str] = {
+    "despejado": "clear",
+    "mayormente despejado": "mostly clear",
+    "parcialmente nublado": "partly cloudy",
+    "nublado": "overcast",
+    "niebla": "fog",
+    "niebla con escarcha": "depositing rime fog",
+    "llovizna leve": "light drizzle",
+    "llovizna": "drizzle",
+    "llovizna intensa": "dense drizzle",
+    "lluvia leve": "light rain",
+    "lluvia": "rain",
+    "lluvia intensa": "heavy rain",
+    "nieve leve": "light snow",
+    "nieve": "snow",
+    "nieve intensa": "heavy snow",
+    "chaparrones": "rain showers",
+    "chaparrones fuertes": "violent rain showers",
+    "tormenta": "thunderstorm",
+    "pronóstico en cache": "offline cached forecast",
+    "desconocido": "unknown",
+}
 
 
 def _to_spanish_description(value: Any) -> str:
@@ -304,6 +336,45 @@ def _fallback_weather() -> dict[str, Any]:
         "description": "pronóstico en cache",
         "forecast": [],
     }
+
+
+def _day_label_en(value: Any, timezone_name: str) -> str:
+    if isinstance(value, str) and len(value) == 10 and value[4] == "-" and value[7] == "-":
+        day_value = datetime.strptime(value, "%Y-%m-%d")
+    else:
+        day_value = utils.to_datetime(value)
+        try:
+            day_value = day_value.astimezone(ZoneInfo(timezone_name))
+        except Exception:
+            pass
+    return WEEKDAY_NAMES_EN[day_value.weekday()]
+
+
+def localize_weather(weather_data: dict[str, Any], language: str) -> dict[str, Any]:
+    if language != "en":
+        return weather_data
+
+    localized = dict(weather_data)
+    es_desc = str(weather_data.get("description", "")).strip().lower()
+    localized["description"] = SPANISH_TO_ENGLISH.get(es_desc, weather_data.get("description", ""))
+    localized["icon"] = _icon_for_description(localized["description"])
+
+    raw_forecast = weather_data.get("forecast", [])
+    en_forecast: list[dict[str, Any]] = []
+    for day in raw_forecast:
+        day_en = dict(day)
+        es_day_desc = str(day.get("description", "")).strip().lower()
+        day_en["description"] = SPANISH_TO_ENGLISH.get(es_day_desc, day.get("description", ""))
+        day_en["icon"] = _icon_for_description(day_en["description"])
+        date_val = day.get("date", "")
+        if date_val:
+            try:
+                day_en["label"] = WEEKDAY_NAMES_EN[datetime.strptime(date_val, "%Y-%m-%d").weekday()]
+            except (ValueError, KeyError):
+                day_en["label"] = day.get("label", "")
+        en_forecast.append(day_en)
+    localized["forecast"] = en_forecast
+    return localized
 
 
 def fetch_weather(config: dict[str, Any], cache_dir: Path) -> tuple[dict[str, Any], str]:

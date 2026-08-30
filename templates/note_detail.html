@@ -4,10 +4,10 @@
 <article class="note-detail">
   <header class="section-head">
     <h2 class="section-title">{{ note.title }}</h2>
-    <p class="meta">{{ note.date_label }}</p>
+    <p class="meta">{{ note.date_label_en if locale.code == 'en' else note.date_label }}</p>
     <p class="tags">
       {% for tag in note.tags %}
-        <span class="pill">{{ tag }}</span>
+        <span class="pill">{{ locale.tags[tag] if locale.tags is defined and tag in locale.tags else tag }}</span>
       {% endfor %}
     </p>
   </header>

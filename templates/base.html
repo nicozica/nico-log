@@ -64,7 +64,8 @@
         <a href="{{ locale.nav.about_path }}" {% if current_path.startswith(locale.nav.about_path) %}aria-current="page"{% endif %}>{{ locale.nav.about_label }}</a>
         {% if alternate_languages %}
         <span class="lang-switch" aria-label="Language">
-          {%- for alt in alternate_languages -%}
+          {%- set sorted_langs = alternate_languages | sort(attribute='hreflang', reverse=true) -%}
+          {%- for alt in sorted_langs -%}
             {%- if alt.hreflang == locale.code -%}
               <span class="lang-switch__item lang-switch__item--active" aria-current="true">{{ alt.hreflang | upper }}</span>
             {%- else -%}
@@ -82,7 +83,7 @@
     </header>
 
     <div class="status-bar" role="status" aria-live="polite">
-      <span><strong>{{ locale.status.updated }}:</strong> {{ build.updated_label }}</span>
+      <span><strong>{{ locale.status.updated }}:</strong> {{ build.updated_label_en if locale.code == 'en' else build.updated_label }}</span>
       {% if status_summary.metrics_available %}
       <span><strong>{{ locale.status.uptime }}:</strong> {{ status_summary.uptime_label }}</span>
       <span><strong>{{ locale.status.cpu_temp }}:</strong> {{ status_summary.cpu_temp_label }}</span>

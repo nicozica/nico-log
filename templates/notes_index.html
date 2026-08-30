@@ -30,12 +30,12 @@
     <article class="card note-card">
       <header>
         <h3 class="card-title"><a href="{{ note.path }}">{{ note.title }}</a></h3>
-        <p class="meta">{{ note.date_label }}</p>
+        <p class="meta">{{ note.date_label_en if locale.code == 'en' else note.date_label }}</p>
       </header>
       <p>{{ note.excerpt_html | safe }}</p>
       <p class="tags">
         {% for tag in note.tags %}
-          <span class="pill">{{ tag }}</span>
+          <span class="pill">{{ locale.tags[tag] if locale.tags is defined and tag in locale.tags else tag }}</span>
         {% endfor %}
       </p>
     </article>

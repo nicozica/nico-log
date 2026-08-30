@@ -262,6 +262,7 @@ def load_notes(notes_dir: Path, site_domain: str = '') -> list[dict[str, Any]]:
                 'date': dt,
                 'date_iso': dt.isoformat(),
                 'date_label': utils.format_date(dt),
+                'date_label_en': utils.format_date_en(dt),
                 'tags': tags,
                 'summary': summary,
                 'excerpt': utils.excerpt_from_markdown(body),
