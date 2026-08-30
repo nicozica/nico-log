@@ -28,6 +28,22 @@ from .publishing import DeploymentResult, SystemdPublisher
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_SITE_URL = "https://www.nico.com.ar"
+PAGE_SIZE = 10
+
+
+def _format_date_ar(value: str) -> str:
+    if not value:
+        return value
+    try:
+        parts = value.split("-")
+        if len(parts) != 3:
+            return value
+        y, m, d = parts
+        if not (y.isdigit() and m.isdigit() and d.isdigit()):
+            return value
+        return f"{d}/{m}/{y}"
+    except (ValueError, AttributeError):
+        return value
 
 
 @dataclass(frozen=True)
@@ -199,6 +215,7 @@ def create_app(
         return token
 
     app.jinja_env.globals["csrf_token"] = csrf_token
+    app.jinja_env.filters["date_ar"] = _format_date_ar
 
     @app.before_request
     def enforce_csrf() -> None:
@@ -319,9 +336,29 @@ def create_app(
         groups = group_views()
         if query:
             groups = [group for group in groups if _group_matches(group, query)]
-        published = _groups_for_section(groups, include="published")
+        published_all = _groups_for_section(groups, include="published")
         drafts = _groups_for_section(groups, include="drafts")
-        return render_template("index.html", published=published, drafts=drafts, query=query)
+        total_published = len(published_all)
+        total_pages = max(1, (total_published + PAGE_SIZE - 1) // PAGE_SIZE)
+        try:
+            page = int(request.args.get("page", "1"))
+        except (ValueError, TypeError):
+            page = 1
+        if page < 1:
+            page = 1
+        if page > total_pages:
+            page = total_pages
+        start = (page - 1) * PAGE_SIZE
+        published = published_all[start : start + PAGE_SIZE]
+        return render_template(
+            "index.html",
+            published=published,
+            drafts=drafts,
+            query=query,
+            page=page,
+            total_pages=total_pages,
+            total_published=total_published,
+        )
 
     @app.route("/notes/new", methods=["GET", "POST"])
     def new_note() -> str | tuple[str, int]:
