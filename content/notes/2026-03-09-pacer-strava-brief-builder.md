@@ -1,8 +1,20 @@
 ---
-title: "Pacer: de las capturas eternas a un brief limpio para ChatGPT"
+note_id: 2026-03-09-pacer-strava-brief-builder
+lang: es
+title: 'Pacer: de las capturas eternas a un brief limpio para ChatGPT'
 date: 2026-03-09
-tags: ["pacer", "strava", "running", "raspberry-pi", "nodejs", "automation", "argensonix-labs"]
-summary: "Armé Pacer, una app local que trae mis actividades desde Strava, resume la carga reciente y me deja generar un brief simple para pasarle a ChatGPT sin depender de capturas ni textos larguísimos."
+slug: pacer-strava-brief-builder
+tags:
+- pacer
+- strava
+- running
+- raspberry-pi
+- nodejs
+- automation
+- argensonix-labs
+summary: Armé Pacer, una app local que trae mis actividades desde Strava, resume la
+  carga reciente y me deja generar un brief simple para pasarle a ChatGPT sin depender
+  de capturas ni textos larguísimos.
 ---
 
 Hoy nació **Pacer**, una mini app pensada para algo bastante concreto: **dejar de pasarle capturas de pantalla al ChatGPT y empezar a darle contexto útil**.

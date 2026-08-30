@@ -49,8 +49,10 @@ class GeneratorBuildTests(unittest.TestCase):
             es_html = es_note.read_text(encoding='utf-8')
             en_html = en_note.read_text(encoding='utf-8')
             legacy_html = legacy_note.read_text(encoding='utf-8')
-            feed_xml = (output_dir / 'notes' / 'rss.xml').read_text(encoding='utf-8')
+            es_feed = (output_dir / 'notes' / 'rss.xml').read_text(encoding='utf-8')
+            en_feed = (output_dir / 'en' / 'notes' / 'rss.xml').read_text(encoding='utf-8')
             root_html = (output_dir / 'index.html').read_text(encoding='utf-8')
+            about_en_html = (output_dir / 'en' / 'about' / 'index.html').read_text(encoding='utf-8')
 
             self.assertIn('<html lang="es"', es_html)
             self.assertIn('href="https://www.nico.com.ar/es/cuando-una-herramienta-deja-de-ser-un-experimento/"', es_html)
@@ -62,13 +64,17 @@ class GeneratorBuildTests(unittest.TestCase):
             self.assertIn('href="https://www.nico.com.ar/en/when-a-tool-stops-being-an-experiment/"', en_html)
             self.assertIn('hreflang="es"', en_html)
             self.assertIn('Originally written in Spanish.', en_html)
-            self.assertIn('This is a provisional English adaptation of the original Spanish note.', en_html)
+            self.assertIn('A few weeks ago a concrete problem showed up at work', en_html)
+            self.assertNotIn('This is a provisional English adaptation of the original Spanish note.', en_html)
 
             self.assertIn('content="0; url=/es/cuando-una-herramienta-deja-de-ser-un-experimento/"', legacy_html)
-            self.assertIn('/es/cuando-una-herramienta-deja-de-ser-un-experimento/', feed_xml)
+            self.assertIn('/es/cuando-una-herramienta-deja-de-ser-un-experimento/', es_feed)
+            self.assertIn('/en/when-a-tool-stops-being-an-experiment/', en_feed)
             self.assertIn('hreflang="x-default"', root_html)
             self.assertIn('/es/', root_html)
             self.assertIn('/en/', root_html)
+            self.assertIn('A low-tech project: hosted on a microSD card', about_en_html)
+            self.assertIn('This portal keeps things simple: static first', about_en_html)
 
 
 if __name__ == '__main__':

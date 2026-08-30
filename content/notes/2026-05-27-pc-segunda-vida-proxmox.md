@@ -1,8 +1,21 @@
 ---
-title: "Una segunda vida para una PC vieja con Proxmox"
+note_id: 2026-05-27-pc-segunda-vida-proxmox
+lang: es
+title: Una segunda vida para una PC vieja con Proxmox
 date: 2026-05-27
-tags: ["proxmox", "home-lab", "linux", "virtualization", "fedora", "tailscale", "kubernetes", "low-tech"]
-summary: "Lo que empezó como una PC vieja juntando polvo terminó convirtiéndose en una excusa perfecta para armar un laboratorio Proxmox: probar distros, entender mejor virtualización, jugar con discos viejos y separar producción de experimentos."
+slug: pc-segunda-vida-proxmox
+tags:
+- proxmox
+- home-lab
+- linux
+- virtualization
+- fedora
+- tailscale
+- kubernetes
+- low-tech
+summary: 'Lo que empezó como una PC vieja juntando polvo terminó convirtiéndose en
+  una excusa perfecta para armar un laboratorio Proxmox: probar distros, entender
+  mejor virtualización, jugar con discos viejos y separar producción de experimentos.'
 ---
 
 Tenía una PC vieja juntando polvo en una caja, en un rincón de mi habitación. Durante años fue mi máquina principal: un AMD FX 8300, una mother ASUS, 16 GB de RAM, una placa de video Gigabyte de 2 GB y una fuente bastante decente. En su momento corrió Windows 10, la usé fuerte durante años y siempre respondió bien.

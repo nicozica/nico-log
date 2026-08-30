@@ -1,8 +1,19 @@
 ---
-title: "Aura: una experiencia minimalista, inmersiva y atmosférica"
+note_id: 2026-03-07-aura-production-deploy
+lang: es
+title: 'Aura: una experiencia minimalista, inmersiva y atmosférica'
 date: 2026-03-07
-tags: ["blurfm", "astro", "github-actions", "apache", "pwa", "radio", "automation"]
-summary: "Nuevo player standalone para Blur FM, repo separado, deploy automático a Apache y base lista para crecer como app real."
+slug: aura-production-deploy
+tags:
+- blurfm
+- astro
+- github-actions
+- apache
+- pwa
+- radio
+- automation
+summary: Nuevo player standalone para Blur FM, repo separado, deploy automático a
+  Apache y base lista para crecer como app real.
 ---
 
 Hoy salió a producción **Aura**, el nuevo player standalone de Blur FM, disponible en [play.blurfm.com](https://play.blurfm.com/).

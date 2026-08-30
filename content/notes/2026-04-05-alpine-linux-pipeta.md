@@ -1,8 +1,21 @@
 ---
-title: "Pipeta, Alpine y el encanto de volver a las bases"
+note_id: 2026-04-05-alpine-linux-pipeta
+lang: es
+title: Pipeta, Alpine y el encanto de volver a las bases
 date: 2026-04-05
-tags: ["alpine-linux", "raspberry-pi-zero-2w", "python", "sqlite", "rss", "weather", "argensonix-labs"]
-summary: "Estos días empecé a usar Pipeta, una Raspberry Pi Zero 2 W pensada pura y exclusivamente como playground de experimentación. La idea fue aprovecharla para aprender sin presión, con scripts chicos, clima, RSS, SQLite y esa clase de pruebas mínimas que no cambian el mundo, pero enseñan bastante."
+slug: alpine-linux-pipeta
+tags:
+- alpine-linux
+- raspberry-pi-zero-2w
+- python
+- sqlite
+- rss
+- weather
+- argensonix-labs
+summary: Estos días empecé a usar Pipeta, una Raspberry Pi Zero 2 W pensada pura y
+  exclusivamente como playground de experimentación. La idea fue aprovecharla para
+  aprender sin presión, con scripts chicos, clima, RSS, SQLite y esa clase de pruebas
+  mínimas que no cambian el mundo, pero enseñan bastante.
 ---
 
 Estos días me encontré con una situación interesante: tener una Raspberry Pi Zero 2 W prendida en Buenos Aires, corriendo Alpine Linux, mientras yo estoy lejos de casa y sin necesitar nada urgente de esa máquina. En otras palabras, el contexto ideal para empezar a probar cosas sin culpa.

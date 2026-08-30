@@ -1,8 +1,19 @@
 ---
-title: "nico://run: una herramienta para leer mis entrenamientos"
+note_id: 2026-03-16-nico-run-training-interpreted
+lang: es
+title: 'nico://run: una herramienta para leer mis entrenamientos'
 date: 2026-03-16
-tags: ["nico-run", "pacer", "running", "astro", "raspberry-pi", "argensonix-labs"]
-summary: "Después de armar Pacer, di un paso más y lancé nico://run: un portal liviano que toma esos datos, los ordena mejor y los convierte en una lectura más clara sobre la última sesión, la semana y lo que podría venir después."
+slug: nico-run-training-interpreted
+tags:
+- nico-run
+- pacer
+- running
+- astro
+- raspberry-pi
+- argensonix-labs
+summary: 'Después de armar Pacer, di un paso más y lancé nico://run: un portal liviano
+  que toma esos datos, los ordena mejor y los convierte en una lectura más clara sobre
+  la última sesión, la semana y lo que podría venir después.'
 ---
 
 Después de **Pacer** apareció bastante rápido la siguiente necesidad. No solo quería pasarle mejores datos a ChatGPT, sino también tener un lugar mío para leer mejor lo que vengo haciendo. No estaba buscando una app de running, ni otro dashboard lleno de widgets, ni una copia casera de Strava. Lo que quería era algo más simple: poder ver la última sesión, entender cómo viene la semana, tener una idea de lo que sigue y leer todo eso con un poco más de claridad. Así nació **nico://run**.

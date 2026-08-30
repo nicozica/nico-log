@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -137,7 +138,7 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
         'home': {
             'page_title': 'Home',
             'latest_notes_title': 'Latest notes',
-            'latest_notes_subtitle': 'Current English coverage is intentionally partial during the migration.',
+            'latest_notes_subtitle': 'Latest entries from the archive.',
             'main_label': 'Main panel',
             'sidebar_label': 'Sidebar',
             'read_link': 'read',
@@ -177,10 +178,24 @@ UI_STRINGS: dict[str, dict[str, Any]] = {
         },
         'about': {
             'page_title': 'About',
-            'description': 'A brief English placeholder for the low-tech setup behind the site.',
-            'hero': 'A low-tech personal site running on tiny hardware.',
-            'translation_pending': 'This page is still being translated. For now, the Spanish version remains the canonical editorial reference.',
-            'original_link': 'Read the Spanish original',
+            'description': 'How this low-tech site is put together, and why it stays deliberately simple.',
+            'hero': 'A low-tech project: hosted on a microSD card, running Alpine Linux 64-bit and just 512 MB of RAM.',
+            'lead': 'This site lives on a tiny machine with one simple idea: publish my own content with minimal resources, without opening unnecessary ports or overcomplicating what should stay light.',
+            'scene_one_title': 'It starts on a tiny board',
+            'scene_one_body': 'What you see here does not run on giant infrastructure: it runs on a',
+            'scene_one_link_title': 'Raspberry Pi Zero 2 W specifications',
+            'scene_one_body_suffix': 'a microcomputer that serves static files with NGINX. It is a technical choice, but also an editorial one: fewer layers, more control.',
+            'runtime_label': 'Current runtime:',
+            'scene_two_title': 'How it reaches the internet without exposing too much',
+            'scene_two_body': 'The server is not published by opening inbound ports. Instead, it keeps an outbound tunnel alive and responds over HTTPS. The goal is simple: a smaller attack surface and predictable operation.',
+            'bullet_one': 'Static content generated with Python.',
+            'bullet_two': 'Local cache to tolerate failures from external services.',
+            'bullet_three': 'Always-on operation from a home node, without doxxing anything sensitive.',
+            'photo_one_alt': 'Raspberry Pi Zero 2 W in the foreground',
+            'photo_one_caption': 'Raspberry Pi Zero 2 W, a microcomputer that fits in a pocket.',
+            'photo_two_alt': 'Raspberry Pi Zero 2 W mounted in its case',
+            'photo_two_caption': 'The microcomputer in its case, ready to stay on 24/7.',
+            'philosophy': 'This portal keeps things simple: static first, dynamic only when it is actually needed. If an external API fails, it reuses the last valid data to keep continuity.',
         },
         'feeds': {
             'rss_label': 'RSS',
@@ -406,6 +421,14 @@ def main() -> None:
         notes_settings = {}
     if not isinstance(news_settings, dict):
         news_settings = {}
+
+    if os.environ.get('NICO_BUILD_LOCAL_ONLY') == '1':
+        status_settings = config.get('status', {})
+        if isinstance(status_settings, dict):
+            status_settings = dict(status_settings)
+            status_settings['metrics_mode'] = 'local'
+            status_settings.pop('ssh_target', None)
+            config['status'] = status_settings
 
     site_power = str(site.get('power', '')).strip()
     if not site_power:

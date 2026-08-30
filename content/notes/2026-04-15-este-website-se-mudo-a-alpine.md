@@ -1,8 +1,19 @@
 ---
-title: "Este website se mudó a Alpine"
+note_id: 2026-04-15-este-website-se-mudo-a-alpine
+lang: es
+title: Este website se mudó a Alpine
 date: 2026-04-15
-tags: ["alpine-linux", "raspberry-pi-zero-2w", "nginx", "cloudflare-tunnel", "low-tech"]
-summary: "Después de ver lo bien que se portó Pipeta con Alpine Linux, terminé migrando también a Pipita, la Raspberry Pi Zero 2 W que sirve nico.com.ar, run.nico.ar y zero.nico.ar. La sorpresa fue que lo más trabajoso no fue restaurar NGINX ni el túnel, sino dejar resuelto el WiFi headless."
+slug: este-website-se-mudo-a-alpine
+tags:
+- alpine-linux
+- raspberry-pi-zero-2w
+- nginx
+- cloudflare-tunnel
+- low-tech
+summary: Después de ver lo bien que se portó Pipeta con Alpine Linux, terminé migrando
+  también a Pipita, la Raspberry Pi Zero 2 W que sirve nico.com.ar, run.nico.ar y
+  zero.nico.ar. La sorpresa fue que lo más trabajoso no fue restaurar NGINX ni el
+  túnel, sino dejar resuelto el WiFi headless.
 ---
 
 Hace unos días escribí sobre **Pipeta**, una Raspberry Pi Zero 2 W con Alpine Linux pensada como sandbox puro. La idea era experimentar sin presión, sin producción y sin convertir cada prueba en infraestructura.

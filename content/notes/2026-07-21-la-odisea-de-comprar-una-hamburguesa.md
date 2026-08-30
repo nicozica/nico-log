@@ -1,8 +1,19 @@
 ---
-title: "La odisea de comprar una hamburguesa"
+note_id: 2026-07-21-la-odisea-de-comprar-una-hamburguesa
+lang: es
+title: La odisea de comprar una hamburguesa
 date: 2026-07-21
-tags: ["ux", "diseño", "interfaces", "autogestión", "mercado-pago"]
-summary: "Lo que debería haber sido una compra rápida terminó entre aplicaciones que pedían actualizarse, un tótem diseñado para empujar las opciones más caras y un sistema de pago tan confuso que el pedido tuvo que hacerlo un empleado desde otra máquina."
+slug: la-odisea-de-comprar-una-hamburguesa
+tags:
+- ux
+- diseño
+- interfaces
+- autogestión
+- mercado-pago
+summary: Lo que debería haber sido una compra rápida terminó entre aplicaciones que
+  pedían actualizarse, un tótem diseñado para empujar las opciones más caras y un
+  sistema de pago tan confuso que el pedido tuvo que hacerlo un empleado desde otra
+  máquina.
 ---
 
 Hoy entré a comprar una hamburguesa y terminé atravesando una especie de circuito de obstáculos digitales que parecía diseñado para comprobar cuánto esfuerzo estaba dispuesto a hacer antes de rendirme e irme a comer a otro lado.

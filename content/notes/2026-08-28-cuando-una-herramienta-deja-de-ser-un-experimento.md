@@ -1,6 +1,9 @@
 ---
+note_id: 2026-08-28-cuando-una-herramienta-deja-de-ser-un-experimento
+lang: es
 title: Cuando una herramienta deja de ser un experimento
 date: '2026-08-28'
+slug: cuando-una-herramienta-deja-de-ser-un-experimento
 tags:
 - automation
 - drupal

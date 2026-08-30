@@ -4,6 +4,17 @@ set -euo pipefail
 # Resolve repo root from the script location.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV_DIR="$ROOT_DIR/.venv"
+LOCAL_ONLY=0
+
+if [ "${1:-}" = "--local" ]; then
+  LOCAL_ONLY=1
+  shift
+fi
+
+if [ "$#" -ne 0 ]; then
+  echo "Usage: $0 [--local]" >&2
+  exit 1
+fi
 
 if git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   PENDING_NOTES="$(git -C "$ROOT_DIR" status --porcelain -- content/notes 2>/dev/null || true)"
@@ -22,6 +33,10 @@ fi
 if ! "$VENV_DIR/bin/python" -c 'import dateutil, feedparser, jinja2, markdown, requests, yaml' >/dev/null 2>&1; then
   echo "Virtualenv dependencies are incomplete. Run $ROOT_DIR/scripts/bootstrap.sh." >&2
   exit 1
+fi
+
+if [ "$LOCAL_ONLY" -eq 1 ]; then
+  export NICO_BUILD_LOCAL_ONLY=1
 fi
 
 "$VENV_DIR/bin/python" "$ROOT_DIR/generator/build.py"

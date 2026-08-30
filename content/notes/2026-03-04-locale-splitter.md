@@ -1,8 +1,18 @@
 ---
-title: "Splitter tool hosteada en Heroku en 30 min"
+note_id: 2026-03-04-locale-splitter
+lang: es
+title: Splitter tool hosteada en Heroku en 30 min
 date: 2026-03-04
-tags: ["ipsos", "tools", "i18n", "locales", "automation", "heroku"]
-summary: "Una mini web app que corta el TXT master usando marcadores por locale y devuelve un ZIP con los HTML listos, con naming consistente."
+slug: locale-splitter
+tags:
+- ipsos
+- tools
+- i18n
+- locales
+- automation
+- heroku
+summary: Una mini web app que corta el TXT master usando marcadores por locale y devuelve
+  un ZIP con los HTML listos, con naming consistente.
 ---
 
 En dos iteraciones (media hora como mucho) armé **locale-splitter**: una mini herramienta web para recortar el TXT master de traducciones y bajarlo como **ZIP**, ya **corriendo en Heroku**.

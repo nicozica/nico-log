@@ -1,8 +1,21 @@
 ---
-title: "La migración que parecía difícil y terminó saliendo en una tarde"
+note_id: 2026-07-16-migracion-heroku-docker
+lang: es
+title: La migración que parecía difícil y terminó saliendo en una tarde
 date: 2026-07-16
-tags: ["heroku", "docker", "proxmox", "nodejs", "postgresql", "cloudflare", "linux", "self-hosting"]
-summary: "Dos herramientas internas, una base PostgreSQL, un worker corriendo en otra VM y varios dominios parecían anticipar una migración complicada. Al final, dividir el trabajo en pasos chicos hizo que todo saliera mucho más fácil de lo esperado."
+slug: migracion-heroku-docker
+tags:
+- heroku
+- docker
+- proxmox
+- nodejs
+- postgresql
+- cloudflare
+- linux
+- self-hosting
+summary: Dos herramientas internas, una base PostgreSQL, un worker corriendo en otra
+  VM y varios dominios parecían anticipar una migración complicada. Al final, dividir
+  el trabajo en pasos chicos hizo que todo saliera mucho más fácil de lo esperado.
 ---
 
 En Heroku tenía dos herramientas internas montadas para resolver cosas bastante puntuales. Andaban bien, no me daban dolores de cabeza y ya formaban parte del día a día del laburo, pero el costo mensual era difícil de justificar para lo chicas que eran.

@@ -1,6 +1,9 @@
 ---
+note_id: 2026-08-19-fallback-4g-a-lo-croto
+lang: es
 title: Internet redundante con bajo presupuesto
 date: '2026-08-19'
+slug: internet-redundante-bajo-presupuesto
 tags:
 - linux
 - proxmox
@@ -8,7 +11,6 @@ tags:
 - homelab
 - tailscale
 - cloudflare
-slug: internet-redundante-bajo-presupuesto
 ---
 
 El otro día me puse a pensar qué pasaba con mi infraestructura casera si se cortaba la fibra. Si el ISP de casa desaparecía durante unas horas, quería seguir pudiendo entrar remotamente a los servidores, mantener algunos túneles de Cloudflare funcionando y tener una salida de emergencia.

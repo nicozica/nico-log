@@ -1,8 +1,16 @@
 ---
-title: "Fanout de Blur FM: origen en Argentina, relays en Europa (sin perder metadata)"
+note_id: 2026-02-28-fanout-blurfm
+lang: es
+title: 'Fanout de Blur FM: origen en Argentina, relays en Europa (sin perder metadata)'
 date: 2026-02-28
-tags: ["blurfm", "icecast", "streaming", "infra"]
-summary: "Cómo armé un fanout simple con Icecast para servir Blur FM en Europa con menor latencia y manteniendo el now playing."
+slug: fanout-blurfm
+tags:
+- blurfm
+- icecast
+- streaming
+- infra
+summary: Cómo armé un fanout simple con Icecast para servir Blur FM en Europa con
+  menor latencia y manteniendo el now playing.
 ---
 
 Con intención de optimizar el funcionamiento de Blur FM, la idea fue: **cuatro calidades desde SAM** (320, 128, 64 y 32 kbps), **Icecast en Argentina como base**, **un relay en Europa** para balancear la demanda, y **Cloudflare** para que las URLs públicas deriven al endpoint más conveniente (AR o EU).

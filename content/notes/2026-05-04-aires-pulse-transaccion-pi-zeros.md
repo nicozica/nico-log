@@ -1,8 +1,21 @@
 ---
-title: "Aires Pulse y una transacción entre Pi Zeros"
+note_id: 2026-05-04-aires-pulse-transaccion-pi-zeros
+lang: es
+title: Aires Pulse y una transacción entre Pi Zeros
 date: 2026-05-04
-tags: ["raspberry-pi-zero-2w", "aires-pulse", "run-nico-ar", "nginx", "json", "home-lab", "low-tech"]
-summary: "Lo que empezó como una idea medio absurda —hacer que una Pi Zero genere señales y otra las publique— terminó convirtiéndose en Aires Pulse: un pequeño radar casero de Buenos Aires que además empezó a alimentar run.nico.ar con condiciones reales para correr."
+slug: aires-pulse-transaccion-pi-zeros
+tags:
+- raspberry-pi-zero-2w
+- aires-pulse
+- run-nico-ar
+- nginx
+- json
+- home-lab
+- low-tech
+summary: 'Lo que empezó como una idea medio absurda —hacer que una Pi Zero genere
+  señales y otra las publique— terminó convirtiéndose en Aires Pulse: un pequeño radar
+  casero de Buenos Aires que además empezó a alimentar run.nico.ar con condiciones
+  reales para correr.'
 ---
 
 El otro día tenía una idea dando vueltas y era conectar dos mundos que ya existían: las Raspberry Pi Zero 2 W y mis pequeños sitios personales. La idea era que una Pi Zero generara información y otra la publicara. Una especie de transacción entre Pi Zeros.

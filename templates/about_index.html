@@ -52,9 +52,42 @@
 </section>
 
 <section class="card prose about-story">
-  <p>{{ locale.about.translation_pending }}</p>
-  <p><a href="/es/acerca/">{{ locale.about.original_link }}</a></p>
-  <p class="meta">Runtime: {{ about.runtime }}.</p>
+  <p class="about-lead">
+    {{ locale.about.lead }}
+  </p>
+
+  <div class="about-scene">
+    <figure class="about-photo">
+      <img src="/assets/img/about/pizero.webp" alt="{{ locale.about.photo_one_alt }}" loading="lazy" />
+      <figcaption>{{ locale.about.photo_one_caption }}</figcaption>
+    </figure>
+    <div class="about-copy">
+      <h3 class="card-title">{{ locale.about.scene_one_title }}</h3>
+      <p>
+        {{ locale.about.scene_one_body }}
+        <a href="https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/" target="_blank" rel="noopener noreferrer" title="{{ locale.about.scene_one_link_title }}"><strong>Raspberry Pi Zero 2 W</strong></a>,
+        {{ locale.about.scene_one_body_suffix }}
+      </p>
+      <p class="meta">{{ locale.about.runtime_label }} {{ about.runtime }}.</p>
+    </div>
+  </div>
+
+  <div class="about-scene about-scene-reverse">
+    <figure class="about-photo">
+      <img src="/assets/img/about/pizero-in-pod.webp" alt="{{ locale.about.photo_two_alt }}" loading="lazy" />
+      <figcaption>{{ locale.about.photo_two_caption }}</figcaption>
+    </figure>
+    <div class="about-copy">
+      <h3 class="card-title">{{ locale.about.scene_two_title }}</h3>
+      <p>{{ locale.about.scene_two_body }}</p>
+      <ul class="about-list">
+        <li>{{ locale.about.bullet_one }}</li>
+        <li>{{ locale.about.bullet_two }}</li>
+        <li>{{ locale.about.bullet_three }}</li>
+      </ul>
+      <p>{{ locale.about.philosophy }}</p>
+    </div>
+  </div>
 </section>
 {% endif %}
 {% endblock %}
