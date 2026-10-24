@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='editor.css') }}" />
     {% block editor_styles %}{% endblock %}
     {% block editor_scripts %}{% endblock %}
+    <script defer src="{{ url_for('static', filename='editor-images.js') }}"></script>
     <script defer src="{{ url_for('static', filename='editor.js') }}"></script>
   </head>
   <body>

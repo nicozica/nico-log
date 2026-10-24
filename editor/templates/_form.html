@@ -65,6 +65,10 @@
     <p class="notice notice-warning editor-compatibility-warning" data-editor-compatibility-warning hidden>
       Esta nota usa Markdown que el modo visual modificaría. Para proteger el contenido, se abre solamente en modo Markdown.
     </p>
+    <div class="image-toolbar" data-image-toolbar hidden>
+      <button class="button" type="button" data-image-open><svg class="image-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-9 9"/></svg>Imagen</button>
+      <span>Elegí, pegá o arrastrá una imagen al editor.</span>
+    </div>
     <textarea id="body" class="markdown-editor" name="body" rows="24" data-markdown-source>{{ form.body }}</textarea>
     <div class="wysiwyg-editor" data-wysiwyg-editor hidden></div>
   </div>
@@ -77,3 +81,41 @@
     <a class="button button-quiet" href="{{ url_for('index') }}">Volver</a>
   </div>
 </form>
+<dialog class="image-dialog" data-image-dialog aria-labelledby="image-dialog-title" data-reusable='{{ (reusable_images|default([]))|tojson }}'>
+  <form class="image-dialog-form" method="dialog" data-image-form novalidate>
+    <div class="image-dialog-head">
+      <h2 id="image-dialog-title">Insertar imagen</h2>
+      <button class="button button-quiet" type="button" data-image-cancel aria-label="Cerrar">✕</button>
+    </div>
+    <div data-image-pick>
+      <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-image-input />
+      <button class="button" type="button" data-image-choose>Elegir imagen…</button>
+      <small>JPEG, PNG o WebP, hasta 15 MB. También podés pegarla o arrastrarla.</small>
+      <div class="image-reuse" data-image-reuse hidden>
+        <p>Ya usadas en la otra versión</p>
+        <div class="image-reuse-list" data-image-reuse-list></div>
+      </div>
+    </div>
+    <div class="image-step" data-image-step hidden>
+      <div class="image-preview"><img alt="" data-image-preview /></div>
+      <progress max="100" value="0" data-image-progress hidden></progress>
+      <p class="image-meta" data-image-meta aria-live="polite"></p>
+      <div class="field">
+        <label for="image-alt">Texto alternativo</label>
+        <input id="image-alt" maxlength="300" autocomplete="off" data-image-alt />
+        <small>Describí lo que se ve, para quien no puede verla.</small>
+      </div>
+      <label class="image-check"><input type="checkbox" data-image-decorative /> Imagen decorativa (sin descripción)</label>
+      <div class="field">
+        <label for="image-caption">Epígrafe <span>(opcional)</span></label>
+        <input id="image-caption" maxlength="500" autocomplete="off" data-image-caption />
+      </div>
+    </div>
+    <p class="notice notice-error" role="alert" data-image-error hidden></p>
+    <div class="form-actions image-dialog-actions">
+      <button class="button button-primary" type="submit" data-image-insert disabled>Insertar imagen</button>
+      <button class="button" type="button" data-image-retry hidden>Reintentar</button>
+      <button class="button button-quiet" type="button" data-image-cancel>Cancelar</button>
+    </div>
+  </form>
+</dialog>

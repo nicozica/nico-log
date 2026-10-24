@@ -29,7 +29,7 @@ LockPersonality=true
 RestrictRealtime=true
 RemoveIPC=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadWritePaths=/srv/repos/personal/argensonix/nico.com.ar/content/notes /srv/repos/personal/argensonix/nico.com.ar/content/drafts
+ReadWritePaths=/srv/repos/personal/argensonix/nico.com.ar/content/notes /srv/repos/personal/argensonix/nico.com.ar/content/drafts /srv/repos/personal/argensonix/nico.com.ar/static/img/notes /srv/repos/personal/argensonix/nico.com.ar/cache
 
 [Install]
 WantedBy=multi-user.target

@@ -704,7 +704,8 @@ button.copy-btn {
 
 .note-photo img {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
   border-radius: 10px;
   border: 1px solid var(--border);

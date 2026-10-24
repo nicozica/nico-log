@@ -84,6 +84,19 @@ The note body uses the plain-JavaScript TOAST UI Editor `3.2.2`, vendored under 
 
 Visual mode is the default only when loading and immediately exporting the body produces the same normalized Markdown. If TOAST UI would rewrite the source, the editor automatically stays in Markdown mode and explains why. The original textarea remains the form source and the existing draft, CSRF, preview, validation, and publication paths are unchanged.
 
+### Image upload
+
+The editor has an **Imagen** button (Toast UI toolbar, or above the textarea for Markdown-only notes). It also accepts pasted and dragged images. Flow: pick image -> it is processed on Pipa -> alt text + optional caption -> the block is inserted at the cursor.
+
+- Accepts JPEG, PNG and WebP, validated by content (Pillow), up to 15 MB / 60 MP / 12000 px per side. Animated images are rejected.
+- Processing (`editor/images.py`): EXIF orientation applied, converted to sRGB, EXIF/GPS/XMP stripped, resized to at most 1600 px wide (never upscaled), then encoded as the smallest of lossy WebP (photos), lossless WebP / optimized PNG (screenshots and graphics). A clean image that would not shrink by at least 15% is kept byte-for-byte; clean WebP is never recompressed.
+- Uploads wait in `cache/editor-uploads/` (pruned after 24 h) until committed. Commit writes `static/img/notes/<alt-slug>-<hash10>.<ext>`, never overwriting. The hash comes from the uploaded bytes, so the same image used from the ES and EN versions resolves to one file; the edit page also offers images already used by the other language version.
+- Inserted markup reuses the existing structure (`<figure class="note-photo">`, `<img ... loading="lazy">`, `<figcaption>` only when a caption was typed). Alt text and caption live in each language's own body.
+- Inserting an image from visual mode switches that note to Markdown mode and hides the mode switch, because Toast UI would rewrite the figure HTML (same protection as notes with custom HTML). Markdown-only notes are never switched.
+- Images are plain static files under `static/img/notes/`, copied to `dist/assets/img/notes/` by the build and rsynced by `scripts/publish.sh`. They are untracked until you commit them; the build and publish include them regardless. Pizero needs nothing new.
+- Upload endpoints (`/media/stage`, `/media/commit`) use the same session CSRF protection as every other editor POST; the editor itself still must not be exposed beyond localhost/trusted LAN.
+- Installing the updated `systemd/nico-log-editor.service` is required (it adds `static/img/notes` and `cache` to `ReadWritePaths`, otherwise `ProtectSystem=strict` blocks uploads). Then `pip install -r requirements.txt` (adds Pillow) or `./scripts/bootstrap.sh`.
+
 ## Local build (Pipa)
 
 ```bash

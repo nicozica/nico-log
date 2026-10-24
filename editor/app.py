@@ -2,13 +2,25 @@ from __future__ import annotations
 
 import hmac
 import os
+import re
 import secrets
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, Response, abort, redirect, render_template, request, send_from_directory, session, url_for
+from flask import (
+    Flask,
+    Response,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 
 from generator.lib.notes import render_markdown
 
@@ -23,12 +35,14 @@ from .content import (
     RevisionConflict,
     ValidationError,
 )
+from .images import MAX_UPLOAD_BYTES, PUBLIC_PREFIX, STAGED_NAME, ImageRejected, ImageStore
 from .publishing import DeploymentResult, SystemdPublisher
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_SITE_URL = "https://www.nico.com.ar"
 PAGE_SIZE = 10
+IMAGE_REFERENCE = re.compile(re.escape(PUBLIC_PREFIX) + r"([A-Za-z0-9._-]+)")
 
 
 def _format_date_ar(value: str) -> str:
@@ -203,8 +217,11 @@ def create_app(
         SESSION_COOKIE_SECURE=not testing,
         TESTING=testing,
     )
-    repository = ContentRepository(project_root or PROJECT_ROOT)
+    root = Path(project_root or PROJECT_ROOT)
+    repository = ContentRepository(root)
+    images = ImageStore(root / "static" / "img" / "notes", root / "cache" / "editor-uploads")
     app.extensions["content_repository"] = repository
+    app.extensions["image_store"] = images
     app.extensions["publisher"] = publisher or SystemdPublisher()
 
     def csrf_token() -> str:
@@ -216,6 +233,12 @@ def create_app(
 
     app.jinja_env.globals["csrf_token"] = csrf_token
     app.jinja_env.filters["date_ar"] = _format_date_ar
+
+    @app.before_request
+    def allow_image_uploads() -> None:
+        # Must run before anything reads the form: only the staging endpoint accepts a large body.
+        if request.endpoint == "stage_image":
+            request.max_content_length = MAX_UPLOAD_BYTES + 256 * 1024
 
     @app.before_request
     def enforce_csrf() -> None:
@@ -237,13 +260,13 @@ def create_app(
         response.headers["X-Content-Type-Options"] = "nosniff"
         if request.endpoint == "preview_document":
             response.headers["Content-Security-Policy"] = (
-                "sandbox; default-src 'none'; img-src https://www.nico.com.ar data:; "
+                "sandbox; default-src 'none'; img-src 'self' https://www.nico.com.ar data:; "
                 "style-src 'unsafe-inline'; form-action 'none'; frame-ancestors 'self'; base-uri 'none'"
             )
         else:
             response.headers["X-Frame-Options"] = "DENY"
             response.headers["Content-Security-Policy"] = (
-                "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+                "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; "
                 "script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'"
             )
         return response
@@ -255,6 +278,64 @@ def create_app(
     @app.get("/favicon.ico")
     def favicon_ico() -> Response:
         return send_from_directory(PROJECT_ROOT / "static", "favicon.ico", mimetype="image/x-icon")
+
+    def media_error(exc: ImageRejected) -> tuple[Response, int]:
+        return jsonify(error=str(exc)), exc.status
+
+    @app.get("/assets/img/notes/<path:name>")
+    def published_media(name: str) -> Response:
+        # Same URL the public site uses, so inserted images render inside the editor and preview.
+        return send_from_directory(images.public_dir, name)
+
+    @app.get("/media/stage/<name>")
+    def staged_media(name: str) -> Response:
+        if not STAGED_NAME.fullmatch(name):
+            abort(404)
+        return send_from_directory(images.stage_dir, name)
+
+    @app.post("/media/stage")
+    def stage_image() -> tuple[Response, int] | Response:
+        upload = request.files.get("file")
+        if upload is None:
+            return jsonify(error="No se recibió ningún archivo."), 400
+        data = upload.stream.read(MAX_UPLOAD_BYTES + 1)
+        try:
+            return jsonify(images.stage(data, upload.filename or ""))
+        except ImageRejected as exc:
+            return media_error(exc)
+        except OSError:
+            app.logger.exception("Could not stage image upload")
+            return jsonify(error="No se pudo guardar la imagen en el servidor."), 500
+
+    @app.post("/media/commit")
+    def commit_image() -> tuple[Response, int] | Response:
+        decorative = request.form.get("decorative") == "1"
+        alt, caption = request.form.get("alt", ""), request.form.get("caption", "")
+        try:
+            if request.form.get("existing"):
+                return jsonify(images.reuse(request.form["existing"], alt, caption, decorative=decorative))
+            return jsonify(images.commit(request.form.get("id", ""), alt, caption, decorative=decorative))
+        except ImageRejected as exc:
+            return media_error(exc)
+        except OSError:
+            app.logger.exception("Could not store image")
+            return jsonify(error="No se pudo guardar la imagen en el servidor."), 500
+
+    def sibling_images(note: EditableNote) -> list[str]:
+        """Images already used by the other language version, offered for reuse (same file, no duplicate)."""
+        group = _find_group(group_views(), note.filename)
+        found: dict[str, None] = {}
+        for version in group.versions if group else ():
+            if version.filename == note.filename:
+                continue
+            try:
+                body = repository.load_for_edit(version.filename).body
+            except (InvalidFilename, NoteNotFound, ValidationError):
+                continue
+            for match in IMAGE_REFERENCE.finditer(body):
+                if (images.public_dir / match.group(1)).is_file():
+                    found.setdefault(f"{PUBLIC_PREFIX}{match.group(1)}", None)
+        return list(found)
 
     def submitted_form() -> dict[str, str]:
         return {
@@ -301,6 +382,7 @@ def create_app(
                 create_english_url = url_for("new_english_version", filename=note.filename)
         return {
             "note_versions": versions,
+            "reusable_images": sibling_images(note),
             "create_english_url": create_english_url,
             **language_display(form),
         }
@@ -529,6 +611,10 @@ def create_app(
         if note.source_kind != "draft":
             abort(404)
         rendered_html = render_markdown(note.body, PUBLIC_SITE_URL)
+        # Draft images may not be published yet: load site-hosted notes images from this editor instead.
+        rendered_html = rendered_html.replace(
+            f'src="{PUBLIC_PREFIX}', f'src="{request.host_url.rstrip("/")}{PUBLIC_PREFIX}'
+        )
         return render_template(
             "preview_document.html",
             note=note,
@@ -623,12 +709,16 @@ def create_app(
         )
 
     @app.errorhandler(400)
-    def bad_request(error: Exception) -> tuple[str, int]:
+    def bad_request(error: Exception) -> tuple[str, int] | tuple[Response, int]:
         message = getattr(error, "description", "La solicitud no es válida.")
+        if request.path.startswith("/media/"):
+            return jsonify(error=message), 400
         return render_template("error.html", message=message), 400
 
     @app.errorhandler(413)
-    def request_too_large(_: Exception) -> tuple[str, int]:
+    def request_too_large(_: Exception) -> tuple[str, int] | tuple[Response, int]:
+        if request.path.startswith("/media/"):
+            return jsonify(error=f"La imagen supera el máximo de {MAX_UPLOAD_BYTES // (1024 * 1024)} MB."), 413
         return render_template("error.html", message="La solicitud supera el tamaño máximo permitido."), 413
 
     return app
