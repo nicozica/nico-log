@@ -119,17 +119,13 @@ Hello.
     def test_published_archive_has_explicit_bilingual_metadata_and_pairing(self) -> None:
         repo_notes_dir = Path(__file__).parents[1] / 'content' / 'notes'
         raw_files = sorted(repo_notes_dir.glob('*.md'))
-        self.assertEqual(len(raw_files), 30)
-        for path in raw_files:
-            raw = path.read_text(encoding='utf-8')
-            self.assertIn('note_id:', raw)
-            self.assertIn('lang:', raw)
-            self.assertIn('slug:', raw)
-
+        self.assertEqual(len(raw_files), 36)
+        # Notes authored through the editor may rely on filename-derived defaults (note_id, lang, slug),
+        # so check the resolved values rather than requiring each key in the front matter.
         loaded = notes.load_notes(repo_notes_dir, site_domain='https://www.nico.com.ar')
-        self.assertEqual(len(loaded), 30)
-        self.assertEqual(sum(1 for note in loaded if note['language'] == 'es'), 15)
-        self.assertEqual(sum(1 for note in loaded if note['language'] == 'en'), 15)
+        self.assertEqual(len(loaded), 36)
+        self.assertEqual(sum(1 for note in loaded if note['language'] == 'es'), 18)
+        self.assertEqual(sum(1 for note in loaded if note['language'] == 'en'), 18)
         self.assertEqual(len({(note['note_id'], note['language']) for note in loaded}), len(loaded))
         self.assertEqual(len({(note['language'], note['slug']) for note in loaded}), len(loaded))
 
@@ -138,6 +134,7 @@ Hello.
             self.assertEqual(langs, {'es', 'en'})
 
         for note in loaded:
+            self.assertTrue(note['note_id'] and note['language'] in {'es', 'en'} and note['slug'])
             if note['language'] == 'es':
                 self.assertIsNotNone(note['translation'])
                 self.assertIsNone(note['original'])

@@ -32,7 +32,7 @@ class GeneratorBuildTests(unittest.TestCase):
                                     build.main()
 
             es_note = output_dir / 'es' / 'cuando-una-herramienta-deja-de-ser-un-experimento' / 'index.html'
-            en_note = output_dir / 'en' / 'when-a-tool-stops-being-an-experiment' / 'index.html'
+            en_note = output_dir / 'en' / 'when-a-tool-stops-being-experimental' / 'index.html'
             legacy_note = output_dir / 'notes' / 'cuando-una-herramienta-deja-de-ser-un-experimento' / 'index.html'
             self.assertTrue((output_dir / 'es' / 'index.html').is_file())
             self.assertTrue((output_dir / 'en' / 'index.html').is_file())
@@ -61,7 +61,7 @@ class GeneratorBuildTests(unittest.TestCase):
             self.assertIn('Cuando una herramienta deja de ser un experimento', es_html)
 
             self.assertIn('<html lang="en"', en_html)
-            self.assertIn('href="https://www.nico.com.ar/en/when-a-tool-stops-being-an-experiment/"', en_html)
+            self.assertIn('href="https://www.nico.com.ar/en/when-a-tool-stops-being-experimental/"', en_html)
             self.assertIn('hreflang="es"', en_html)
             self.assertIn('Originally written in Spanish.', en_html)
             self.assertIn('A few weeks ago a concrete problem showed up at work', en_html)
@@ -69,7 +69,7 @@ class GeneratorBuildTests(unittest.TestCase):
 
             self.assertIn('content="0; url=/es/cuando-una-herramienta-deja-de-ser-un-experimento/"', legacy_html)
             self.assertIn('/es/cuando-una-herramienta-deja-de-ser-un-experimento/', es_feed)
-            self.assertIn('/en/when-a-tool-stops-being-an-experiment/', en_feed)
+            self.assertIn('/en/when-a-tool-stops-being-experimental/', en_feed)
             self.assertIn('hreflang="x-default"', root_html)
             self.assertIn('Static fallback for the bilingual site root.', root_html)
             self.assertIn('href="/es/"', root_html)

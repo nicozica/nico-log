@@ -102,7 +102,7 @@ class LanguageSelectorOrderTests(unittest.TestCase):
         self._assert_es_before_en(note, 'ES note')
 
     def test_es_en_order_on_en_note(self) -> None:
-        note = self._dist / 'en' / 'when-a-tool-stops-being-an-experiment' / 'index.html'
+        note = self._dist / 'en' / 'when-a-tool-stops-being-experimental' / 'index.html'
         self._assert_es_before_en(note, 'EN note')
 
     def test_active_language_marked_on_es_home(self) -> None:

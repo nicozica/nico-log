@@ -1,14 +1,14 @@
 ---
 note_id: 2026-08-28-cuando-una-herramienta-deja-de-ser-un-experimento
 lang: en
-title: When a Tool Stops Being an Experiment
+title: When a Tool Stops Being Experimental
 date: '2026-08-28'
 tags:
 - automation
 - drupal
 - devops
 - ai
-slug: when-a-tool-stops-being-an-experiment
+slug: when-a-tool-stops-being-experimental
 summary: How a banner-visibility automation grew into a small campaign system coordinating
   content, markets, schedules, and contingencies.
 ---
